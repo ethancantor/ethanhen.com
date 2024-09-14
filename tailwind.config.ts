@@ -55,7 +55,22 @@ const config: Config = {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			fontFamily: {
+				futura: ['var(--font-futura)']
+			},
+			filter: {
+				blue: {
+					'invert': "26%",
+					'sepia': "79%",
+					'saturate': "2646%",
+					'hue-rotate': "217deg",
+					'brightness': "97%",
+					'contrast': "90%",
+
+				}
 			}
+
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
