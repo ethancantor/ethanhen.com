@@ -1,9 +1,9 @@
-import { ScrollableGalleryComponent } from "@/components/scrollable-gallery";
 import path from "path";
 import fs from "fs";
+import { Gallery } from "./components/Gallery";
 
 async function fetchImages() {
-  const imageDir = path.join(process.cwd(), "/public/images");
+	const imageDir = path.join(process.cwd(), "/public/images");
 	const imgCateoryNames = fs.readdirSync(imageDir);
 
 	const images: Record<string, string[]> = {};
@@ -16,9 +16,11 @@ async function fetchImages() {
 
 export default async function Home() {
 
-  const { images } = await fetchImages();
+	const { images } = await fetchImages();
 
-  return (
-      <ScrollableGalleryComponent images={images} />
-  );
+	return (
+		<div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 p-4 sm:p-6 md:p-8 transition-colors duration-300">
+			<Gallery images={JSON.parse(JSON.stringify(images))} />
+		</div>
+	);
 }
