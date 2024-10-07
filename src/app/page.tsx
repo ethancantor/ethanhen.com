@@ -13,7 +13,7 @@ export default function Home () {
                         <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                 </Link>
-                <Link href='/gallery' className='italic flex flex-row gap-1 items-center group hover:underline relative'> 
+                <Link href='/fileupload' className='italic flex flex-row gap-1 items-center group hover:underline relative'> 
                     files 
                     <svg width="30px" height="30px" viewBox="0 0 24 24" fill="#fff" xmlns="http://www.w3.org/2000/svg" 
                         className='group-hover:translate-x-1 transition absolute ms-8'>

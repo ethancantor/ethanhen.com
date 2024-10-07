@@ -23,7 +23,8 @@ export const GalleryImage = ({ image, section, onClick, i, expanded } :
                 height={500}
                 quality={50}
                 onClick={() => onClick(i)}
-            />
+                placeholder='empty'
+                />
             <div className={`fixed max-w-[55vw] h-fit z-10 py-10 flex flex-row gap-6 px-5
                 ${expanded ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'} 
                 transition-opacity duration-300 ease-in-out bg-neutral-800 inset-0 mx-auto my-auto
@@ -47,6 +48,7 @@ export const GalleryImage = ({ image, section, onClick, i, expanded } :
                         height: '100%'
                     }}
                     quality={100}
+                    unoptimized
                 />
                 <div className='flex justify-center items-center'
                     onClick={() => onClick(i + 1)}
