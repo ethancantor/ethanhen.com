@@ -6,7 +6,7 @@ export type imgListType = {image: string, categoryName: string}
 export const dynamic = "force-dynamic";
 
 async function fetchImages() {
-	const imageDir = path.join(process.cwd(), "/public/images");
+	const imageDir = path.join(process.cwd(), "/data/gallery");
 	const imgCateoryNames = fs.readdirSync(imageDir);
 
 	const imageList: imgListType[] = []
