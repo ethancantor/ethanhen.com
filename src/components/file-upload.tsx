@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Upload, File, X } from "lucide-react"
 import { uploadFiles } from '@/actions/file-upload'
 import AutocompleteInput from './autocomplete-input'
+import { signIn, signOut } from "next-auth/react"
 
 export function FileUploadComponent({ folders } : { folders: string[] }) {
   const [files, setFiles] = useState<File[]>([]);
@@ -105,6 +106,8 @@ export function FileUploadComponent({ folders } : { folders: string[] }) {
         >Submit</button>
         <AutocompleteInput folders={folders} folderState={[folder, setFolder]}/>
       </div>
+      <button onClick={() => signIn()}>Sign in</button>
+      <button onClick={() => signOut()}>Sign out</button>
     </div>
   )
 }

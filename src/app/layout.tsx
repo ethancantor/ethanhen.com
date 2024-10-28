@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
-import localFont from '@next/font/local'
+import localFont from "next/font/local"
+import NextAuthSessionProvider from "@/components/SessionProvider/SessionProvider";
 
 export const metadata: Metadata = {
   title: "ethanhen.com",
@@ -29,7 +30,9 @@ export default function RootLayout({
             defaultTheme="dark"
             enableSystem
           >
-          {children}
+            <NextAuthSessionProvider >
+              {children}
+          </NextAuthSessionProvider>
         </ThemeProvider>
       </body>
     </html>
