@@ -1,31 +1,34 @@
-import { Account, Profile } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
+import { randomBytes } from "crypto";
+import { AuthOptions, Session } from "next-auth";
+import { JWT } from "next-auth/jwt";
+import CredentialsProvider from "next-auth/providers/credentials"
 
-const accessEmails = process.env.ACCESS_EMAILS || [] as string[];
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
     providers: [
-        GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID || '',
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-            authorization: {
-                params: {
-                    prompt: 'consent',
-                    access_type: 'offline',
-                    response_type: 'code'
-                }
+        CredentialsProvider({
+            id: 'credentials',
+            name: 'Username and Password',
+            credentials: {
+                username: { label: "Username", type: "text", placeholder: "username" },
+                password: { label: "Password", type: "password" }
+            },
+            async authorize(credentials, req) {
+                console.log('AUTHORIZINGV', credentials, req);
+                return null;
             }
-        })
+        }),
     ],
+    session: {
+        strategy: "jwt",
+        generateSessionToken: () => {return randomBytes(32).toString('hex')}
+    },
+    secret: process.env.NEXTAUTH_SECRET,
     callbacks: {
-        async signIn( params : { account: Account | null, profile?: Profile | undefined} ) {
-            // console.log(params);
-            if(params.account?.provider === 'google'){
-                const email = params.profile?.email || '';
-                console.log(accessEmails, accessEmails.includes(email));
-                return (params.profile?.email_verified || false) && accessEmails.includes(email);
-            } 
-            return false;
-        }
-    }
+        async session({ session, token }: { session: Session, token: JWT }) {
+            console.log('SESSION', session, token);
+            return session
+        },
+    },
+    debug: true
 }

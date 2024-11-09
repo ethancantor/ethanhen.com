@@ -1,13 +1,24 @@
-import  { DefaultSession } from "next-auth"
-import { GoogleProfile } from "next-auth/providers/google"
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import * as NextAuth from "next-auth";
 
 declare module "next-auth" {
     /**
      * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
      */
     interface Session {
-        user: DefaultSession["user"]
+        user: {
+            id: string;
+            name: string;
+        } & DefaultSession["user"];
     }
-
-    interface Profile extends GoogleProfile {}
+    interface User {
+        id: string;
+        name: string;
+    }
+    interface JWT {
+        user: {
+            id: string;
+            name: string;
+        };
+    }
 }

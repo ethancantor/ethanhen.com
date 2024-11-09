@@ -2,9 +2,9 @@ import { FileUploadComponent } from "@/components/file-upload"
 import path from "path";
 import React from "react"
 import fs from 'fs';
-import { getServerSession } from "next-auth";
 import { authOptions } from "@/utils/authOptions";
 import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
 
 async function getGalleryFolders () {
     const imageDir = path.join(process.cwd(), "/data/gallery");
