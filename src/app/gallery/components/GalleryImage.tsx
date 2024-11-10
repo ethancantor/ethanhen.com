@@ -12,7 +12,7 @@ export const GalleryImage = ({ image, onClick, i, expanded } :
     useOutsideClick([divRef, imgRef], () => onClick(null), expanded);
 
     return (
-        <div className="relative overflow-hidden rounded-lg shadow-md transition-all duration-300 ease-in-out max-h-64 max-w-64 p-2 bg-neutral-800" 
+        <div className="relative overflow-hidden rounded-lg shadow-md transition-all duration-300 ease-in-out max-h-64 max-w-64" 
             ref={imgRef}
         >
             <Image

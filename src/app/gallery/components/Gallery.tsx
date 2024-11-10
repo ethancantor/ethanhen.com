@@ -8,29 +8,30 @@ export const Gallery = ({imgList}: { imgList: imgListType[] }) => {
 
     const [expandedImage, setExpandedImage] = useState<number | null>(null);
 
-    const images = imgList.reduce((acc: Record<string, StaticImageData[]>, val: imgListType) => {
+    const images = imgList.reduce((acc: Record<string, {image: StaticImageData, imageName: string}[]>, val: imgListType) => {
         if(!acc[val.categoryName]) acc[val.categoryName] = [];
-        acc[val.categoryName].push(val.image)
+        acc[val.categoryName].push({image: val.image, imageName: val.imgName});
         return acc
     }, {});
 
-    const indexMap = imgList.map((val, idx) => `${idx}_${val.categoryName}`)
-    console.log(indexMap)
+    const indexMap = imgList.map((val) => `${val.imgName}_${val.categoryName}`);
 
     return (
         <div>
-            {Object.keys(images).map((section, index) => (
-				<section key={section + index} className="mb-12">
+            {Object.keys(images).map((section, sectionIdx) => (
+				<section key={section + sectionIdx} className="mb-12">
 					<h2 className="text-2xl font-bold mb-4 text-neutral-800 dark:text-neutral-100">
-						{section}
+						{section} {sectionIdx}
 					</h2>
 					<div className="flex flex-row flex-wrap gap-2">
-						{images[section].map((image, idx) => {
-                            const imgIndex = indexMap.indexOf(`${index + idx}_${section}`);
+						{images[section].map((image) => {
+                            const imgIndex = indexMap.indexOf(`${image.imageName}_${section}`);
                             return (
                                 <GalleryImage key={imgIndex} 
-                                image={image} 
-                                i={idx + 1} onClick={setExpandedImage}
+                                image={image.image} 
+                                i={imgIndex} onClick={(i: number | null) => {
+                                    setExpandedImage(i);
+                                }}
                                 expanded={expandedImage === imgIndex}
                             />
                             )

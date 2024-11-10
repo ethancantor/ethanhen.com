@@ -3,7 +3,7 @@ import fs from "fs";
 import { Gallery } from "./components/Gallery";
 import { StaticImageData } from "next/image";
 
-export type imgListType = {image: StaticImageData, categoryName: string}
+export type imgListType = {image: StaticImageData, categoryName: string, imgName: string}
 export const dynamic = "force-dynamic";
 
 async function fetchImages() {
@@ -16,7 +16,7 @@ async function fetchImages() {
 		const images = fs.readdirSync(imageDir + '/' + categoryName);
 		for(const image of images){
 			const img: StaticImageData = await import(`/public/gallery/${categoryName}/${image}`);
-			imageList.push({image: img, categoryName});
+			imageList.push({image: img, categoryName, imgName: image});
 		}
 	}
 	return { imageList };

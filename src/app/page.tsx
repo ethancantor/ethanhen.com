@@ -1,10 +1,18 @@
+import { authOptions } from '@/utils/authOptions'
+import { getServerSession } from 'next-auth'
 import Link from 'next/link'
 import React from 'react'
 
-export default function Home () {
+export default async function Home () {
+
+    const session = await getServerSession(authOptions);
+
     return (
         <main className="h-screen w-screen flex flex-col justify-center items-center gap-4">
             <h1 className="text-3xl font-bold">ethanhen</h1>
+            {session &&<div> signed in as { session?.user?.name } </div>}
+            {session && <Link href='/logout'> sign out </Link>}
+            {!session && <Link href='/login'> sign in </Link>}
             <div className='flex flex-col text-center gap-4 items-center'>
                 <Link href='/gallery' className='italic flex flex-row gap-1 items-center group hover:underline relative'> 
                     gallery 
