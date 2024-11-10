@@ -2,18 +2,20 @@
 import React, { useState } from 'react'
 import { GalleryImage } from './GalleryImage';
 import { imgListType } from '../page';
+import { StaticImageData } from 'next/image';
 
 export const Gallery = ({imgList}: { imgList: imgListType[] }) => {
 
     const [expandedImage, setExpandedImage] = useState<number | null>(null);
 
-    const images = imgList.reduce((acc: Record<string, string[]>, val: imgListType) => {
+    const images = imgList.reduce((acc: Record<string, StaticImageData[]>, val: imgListType) => {
         if(!acc[val.categoryName]) acc[val.categoryName] = [];
         acc[val.categoryName].push(val.image)
         return acc
     }, {});
 
-    const indexMap = imgList.map((val) => `${val.image}_${val.categoryName}`)
+    const indexMap = imgList.map((val, idx) => `${idx}_${val.categoryName}`)
+    console.log(indexMap)
 
     return (
         <div>
@@ -23,12 +25,12 @@ export const Gallery = ({imgList}: { imgList: imgListType[] }) => {
 						{section}
 					</h2>
 					<div className="flex flex-row flex-wrap gap-2">
-						{images[section].map((image) => {
-                            const imgIndex = indexMap.indexOf(`${image}_${section}`);
+						{images[section].map((image, idx) => {
+                            const imgIndex = indexMap.indexOf(`${index + idx}_${section}`);
                             return (
                                 <GalleryImage key={imgIndex} 
-                                image={image} section={section} 
-                                i={imgIndex} onClick={setExpandedImage}
+                                image={image} 
+                                i={idx + 1} onClick={setExpandedImage}
                                 expanded={expandedImage === imgIndex}
                             />
                             )
@@ -36,7 +38,6 @@ export const Gallery = ({imgList}: { imgList: imgListType[] }) => {
 					</div>
 				</section>
 			))}
-            
         </div>
     )
 };

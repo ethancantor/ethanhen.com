@@ -1,10 +1,10 @@
 'use client';
 import { useOutsideClick } from '@/hooks/useOutsideClick';
-import Image from 'next/image'
+import Image, { StaticImageData } from 'next/image'
 import React, { useRef } from 'react'
 
-export const GalleryImage = ({ image, section, onClick, i, expanded } : 
-    { image : string, section: string, onClick: (index: number | null) => void, i: number, expanded: boolean }) => {
+export const GalleryImage = ({ image, onClick, i, expanded } : 
+    { image : StaticImageData, onClick: (index: number | null) => void, i: number, expanded: boolean }) => {
 
     const divRef = useRef(null);
     const imgRef = useRef(null);
@@ -16,8 +16,8 @@ export const GalleryImage = ({ image, section, onClick, i, expanded } :
             ref={imgRef}
         >
             <Image
-                src={`/images/${section}/${image}`}
-                alt={image}
+                src={image}
+                alt={image.toString()}
                 className="transition-transform duration-300 ease-in-out hover:scale-110 w-fit h-fit rounded-lg"
                 width={500}
                 height={500}
@@ -37,8 +37,8 @@ export const GalleryImage = ({ image, section, onClick, i, expanded } :
                     </svg>
                 </div>
                 <Image
-                    src={`/images/${section}/${image}`}
-                    alt={image}
+                    src={image}
+                    alt={image.toString()}
                     loading='lazy'
                     sizes='100vw'
                     width={1000} height={1000}
