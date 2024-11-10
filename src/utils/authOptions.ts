@@ -1,6 +1,7 @@
 import { randomBytes, randomUUID } from "crypto";
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials"
+import { handleSignIn } from "./cryptoAuth";
 
 
 export const authOptions: AuthOptions = {
@@ -13,6 +14,9 @@ export const authOptions: AuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
+                console.log('HANDLE SIGN IN');
+                const valid = await handleSignIn(credentials?.username || '', credentials?.password || '');
+                if(!valid) return null;
                 return { 
                     id: randomUUID(), name: credentials?.username || '' 
                 };

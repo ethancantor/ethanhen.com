@@ -1,6 +1,12 @@
 import { LoginPage } from "@/components/login-page"
 import React from "react"
 
-export default function page() {
-	return <LoginPage />
+type SearchParams = {
+	error?: string
+	callbackUrl?: string
+}
+
+export default async function Login({ searchParams }: { searchParams: Promise<SearchParams> }) {
+	const mySearchParams = await searchParams; 
+	return <LoginPage error={mySearchParams.error}/>
 };
