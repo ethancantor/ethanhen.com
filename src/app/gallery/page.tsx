@@ -1,9 +1,9 @@
 import path from "path";
 import fs from "fs";
-import { Gallery } from "./components/Gallery";
 import { StaticImageData } from "next/image";
+import { Gallery } from "@/components/gallery";
 
-export type imgListType = {image: StaticImageData, categoryName: string, imgName: string}
+export type imgListType = { id: number, src: string | StaticImageData, alt: string, category: string }
 export const dynamic = "force-dynamic";
 
 async function fetchImages() {
@@ -11,12 +11,13 @@ async function fetchImages() {
 	const imgCateoryNames = fs.readdirSync(imageDir);
 
 	const imageList: imgListType[] = []
+	let id = 0;
 
-	for(const categoryName of imgCateoryNames){
-		const images = fs.readdirSync(imageDir + '/' + categoryName);
+	for(const category of imgCateoryNames){
+		const images = fs.readdirSync(imageDir + '/' + category);
 		for(const image of images){
-			const img: StaticImageData = await import(`/public/gallery/${categoryName}/${image}`);
-			imageList.push({image: img, categoryName, imgName: image});
+			const img: StaticImageData = await import(`/public/gallery/${category}/${image}`);
+			imageList.push({ src: img, category, alt: image, id: id++ });
 		}
 	}
 	return { imageList };
@@ -28,7 +29,8 @@ export default async function Home() {
 
 	return (
 		<div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 p-4 sm:p-6 md:p-8 transition-colors duration-300">
-			<Gallery imgList={JSON.parse(JSON.stringify(imageList))}/>
+			<Gallery images={JSON.parse(JSON.stringify(imageList))}/>
+			{/* <Gallery imgList={JSON.parse(JSON.stringify(imageList))}/> */}
 		</div>
 	);
 }

@@ -28,7 +28,7 @@ export function AccountPage() {
       <Card className="w-full max-w-md bg-black border border-white/10 text-white shadow-2xl">
         <CardHeader className="space-y-1 px-4 sm:px-6">
           <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight">create an ethanhen.com account</CardTitle>
-          {error &&<CardDescription className="text-sm text-red-400">Username already taken</CardDescription>}
+          {error &&<CardDescription className="text-sm text-red-400">username already taken</CardDescription>}
         </CardHeader>
         <CardContent className="space-y-1 px-4 sm:px-6">
           <div className="space-y-2">
@@ -71,7 +71,7 @@ export function AccountPage() {
         </CardContent>
         <CardFooter className="px-4 sm:px-6">
           <Button className="w-full bg-white text-black hover:bg-zinc-200 transition-colors text-sm sm:text-base py-2 sm:py-3" onClick={handleSubmit}>
-            Create Account
+            create account
           </Button>
         </CardFooter>
       </Card>
