@@ -15,8 +15,7 @@ export function LoginPage({ error }: { error?: string }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would typically handle the login logic
-    signIn('credentials', { username, password });
+    signIn('credentials', { username, password, callbackUrl: '/' });
   }
 
   return (
@@ -24,7 +23,7 @@ export function LoginPage({ error }: { error?: string }) {
       <div className={`w-full max-w-md px-6 py-4 space-y-2 rounded-xl shadow-2xl border ${error ? 'border-red-500' : 'border-white/10'}`}>
         <div className="text-center">
           <h2 className="mt-2 text-3xl font-bold text-white">ethanhen.com</h2>
-          <Link href="/register" className="w-full text-white font-semibold px-2 py-1 rounded-lg">Create an Account</Link>
+          <Link href="/register" className="w-full text-white font-semibold px-2 py-1 rounded-lg hover:bg-zinc-800">Create an Account</Link>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">

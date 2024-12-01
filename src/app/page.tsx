@@ -6,11 +6,12 @@ import React from 'react'
 export default async function Home () {
 
     const session = await getServerSession(authOptions);
+    console.log(session);
 
     return (
         <main className="h-screen w-screen flex flex-col justify-center items-center gap-4">
             <h1 className="text-3xl font-bold">ethanhen</h1>
-            {session &&<div> signed in as { session?.user?.name } </div>}
+            {session &&<div> signed in as { session?.user?.name } { session.user.role} </div>}
             {session && <Link href='/logout'> sign out </Link>}
             {!session && <Link href='/login'> sign in </Link>}
             <div className='flex flex-col text-center gap-4 items-center'>
