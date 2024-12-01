@@ -6,7 +6,6 @@ import React from 'react'
 export default async function Home () {
 
     const session = await getServerSession(authOptions);
-    console.log(session);
 
     return (
         <main className="h-screen w-screen flex flex-col justify-center items-center gap-4">

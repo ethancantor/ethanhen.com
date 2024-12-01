@@ -29,9 +29,7 @@ function recurDir(directory: string) {
 }
 
 export default async function FilesPage() {
-
     const files = recurDir("./files");
-    console.log(files);
 
     return (
         <div className="container mx-auto p-4">

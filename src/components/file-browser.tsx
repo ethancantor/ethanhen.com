@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileIcon, FolderIcon, ChevronRight, ChevronDown } from "lucide-react";
+import { FileIcon, FolderIcon, ChevronDown, ChevronUp, FileText, FileAudio, FileVideo, FileType, FileImage, FileCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { File } from "@/app/files/page";
 
@@ -33,44 +33,50 @@ function FileItem({ file, level, path = "" }: FileItemProps) {
 		setIsExpanded(!isExpanded);
 	};
 
+	let icon = <FolderIcon className="text-yellow-500 h-5 w-5" />;
+	if(file.type === "file") {
+		const fileEnd = file.name.split(".").pop();
+		if(fileEnd === 'txt') icon = <FileText className="text-white-500 h-5 w-5" />;
+		else if(fileEnd === 'wav' || fileEnd === 'mp3') icon = <FileAudio className="text-white-500 h-5 w-5" />
+		else if(fileEnd === 'mov' || fileEnd === 'mp4') icon = <FileVideo className="text-white-500 h-5 w-5" />
+		else if(fileEnd === 'pdf') icon = <FileType className="text-white-500 h-5 w-5" />
+		else if(fileEnd === 'png' || fileEnd === 'jpg' || fileEnd === 'jpeg' || fileEnd === 'svg') icon = <FileImage className="text-white-500 h-5 w-5" />
+		else if(fileEnd === 'cfg') icon = <FileCog className="text-white-500 h-5 w-5" />
+		else icon = <FileIcon className="text-white-500 h-5 w-5" />
+	}
+
 	return (
 		<div>
-		<div className="flex items-center space-x-2">
-			{file.type === "folder" && (
-			<Button
-				variant="ghost"
-				size="sm"
-				className="p-0 h-6 w-6"
-				onClick={toggleExpand}
-			>
-				{isExpanded ? (
-					<ChevronDown className="h-4 w-4" />
-				) : (
-					<ChevronRight className="h-4 w-4" />
+			<div className={`flex items-center space-x-2 ${file.type === 'folder' && 'cursor-pointer'}`} onClick={file.type === "folder" ? toggleExpand : undefined}>
+				{icon}
+				<span className={file.type === "folder" ? "font-semibold" : ""}>{file.name.replace("files/", "")}</span>
+				{file.type === "folder" && (
+				<Button
+					size="sm"
+					variant="ghost"
+					className="p-0 h-6 w-6"
+				>
+					{isExpanded ? (
+						<ChevronDown className="h-4 w-4" />
+					) : (
+						<ChevronUp className="h-4 w-4" />
+					)}
+				</Button>
 				)}
-			</Button>
-			)}
-			{file.type === "folder" ? (
-					<FolderIcon className="text-yellow-500 h-5 w-5" />
-				) : (
-					<FileIcon className="text-gray-500 h-5 w-5" />
-				)
-			}
-			<span className={file.type === "folder" ? "font-semibold" : ""}>{file.name}</span>
-			{/* {file.type === "file" && <DownloadButton fileName={fullPath} />} */}
-		</div>
-		{file.type === "folder" && isExpanded && (
-			<div className="ml-6 mt-2 space-y-2">
-			{file.children?.map((childFile, index) => (
-				<FileItem
-				key={index}
-				file={childFile}
-				level={level + 1}
-				path={`${fullPath}/`}
-				/>
-			))}
+				{/* {file.type === "file" && <DownloadButton fileName={fullPath} />} */}
 			</div>
-		)}
+			{file.type === "folder" && isExpanded && (
+				<div className="ml-6 mt-2 space-y-2">
+				{file.children?.map((childFile, index) => (
+					<FileItem
+					key={index}
+					file={childFile}
+					level={level + 1}
+					path={`${fullPath}/`}
+					/>
+				))}
+				</div>
+			)}
 		</div>
 	);
 }
