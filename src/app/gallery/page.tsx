@@ -7,7 +7,7 @@ export type imgListType = { id: number, src: string | StaticImageData, alt: stri
 export const dynamic = "force-dynamic";
 
 async function fetchImages() {
-	const imageDir = path.join(process.cwd(), "/public/gallery");
+	const imageDir = path.join(process.cwd(), "/gallery");
 	const imgCateoryNames = fs.readdirSync(imageDir);
 
 	const imageList: imgListType[] = []
@@ -16,7 +16,7 @@ async function fetchImages() {
 	for(const category of imgCateoryNames){
 		const images = fs.readdirSync(imageDir + '/' + category);
 		for(const image of images){
-			const img: StaticImageData = await import(`/public/gallery/${category}/${image}`);
+			const img: StaticImageData = await import(`/gallery/${category}/${image}`);
 			imageList.push({ src: img, category, alt: image, id: id++ });
 		}
 	}

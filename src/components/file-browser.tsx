@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { FileIcon, FolderIcon, ChevronDown, ChevronUp, FileText, FileAudio, FileVideo, FileType, FileImage, FileCog } from "lucide-react";
+import { FileIcon, FolderIcon, ChevronDown, ChevronUp, FileText, FileAudio, FileVideo, FileType, FileImage, FileCog, FileCode, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { File } from "@/app/files/page";
+import { Dialog, DialogContent, DialogTitle } from "./dialog";
 
 interface FileBrowserProps {
 	files: File[];
@@ -27,7 +28,10 @@ interface FileItemProps {
 
 function FileItem({ file, level, path = "" }: FileItemProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
+	const [showEdit, setShowEdit] = useState(false);
 	const fullPath = `${path}${file.name}`;
+
+	const [currentName, setCurrentName] = useState(file.name);
 
 	const toggleExpand = () => {
 		setIsExpanded(!isExpanded);
@@ -42,6 +46,7 @@ function FileItem({ file, level, path = "" }: FileItemProps) {
 		else if(fileEnd === 'pdf') icon = <FileType className="text-white-500 h-5 w-5" />
 		else if(fileEnd === 'png' || fileEnd === 'jpg' || fileEnd === 'jpeg' || fileEnd === 'svg') icon = <FileImage className="text-white-500 h-5 w-5" />
 		else if(fileEnd === 'cfg') icon = <FileCog className="text-white-500 h-5 w-5" />
+		else if(fileEnd === 'sh') icon = <FileCode className="text-white-500 h-5 w-5" />
 		else icon = <FileIcon className="text-white-500 h-5 w-5" />
 	}
 
@@ -49,7 +54,7 @@ function FileItem({ file, level, path = "" }: FileItemProps) {
 		<div>
 			<div className={`flex items-center space-x-2 ${file.type === 'folder' && 'cursor-pointer'}`} onClick={file.type === "folder" ? toggleExpand : undefined}>
 				{icon}
-				<span className={file.type === "folder" ? "font-semibold" : ""}>{file.name.replace("files/", "")}</span>
+				<span className={file.type === "folder" ? "font-semibold" : ""}>{currentName.replace("files/", "")}</span>
 				{file.type === "folder" && (
 				<Button
 					size="sm"
@@ -63,7 +68,9 @@ function FileItem({ file, level, path = "" }: FileItemProps) {
 					)}
 				</Button>
 				)}
-				{/* {file.type === "file" && <DownloadButton fileName={fullPath} />} */}
+				<Button size="sm" variant="ghost" onClick={() => setShowEdit(true)}>
+					<Edit className="h-4 w-4"/>
+				</Button>
 			</div>
 			{file.type === "folder" && isExpanded && (
 				<div className="ml-6 mt-2 space-y-2">
@@ -77,6 +84,12 @@ function FileItem({ file, level, path = "" }: FileItemProps) {
 				))}
 				</div>
 			)}
+			<Dialog open={showEdit} onOpenChange={setShowEdit}>
+				<DialogContent>
+					<DialogTitle>Edit File</DialogTitle>
+					<input value={currentName} onChange={(e) => setCurrentName(e.target.value)}/>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 
 async function getGalleryFolders () {
-    const imageDir = path.join(process.cwd(), "/public/gallery");
+    const imageDir = path.join(process.cwd(), "/gallery");
 	const folders = fs.readdirSync(imageDir);
 
     return { folders };
