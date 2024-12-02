@@ -1,5 +1,5 @@
 import { authOptions } from "@/utils/authOptions";
-import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import { getServerSession } from "next-auth";
 
 export async function POST(request: Request){
@@ -29,4 +29,21 @@ export async function POST(request: Request){
     }
 
     return new Response('OK', { status: 200 });
+}
+
+export async function GET(request: Request){
+    const { searchParams } = new URL(request.url);
+    const path = searchParams.get('path');
+    try {
+        const exists = existsSync(`./files/${path}`);
+        if(!exists) return new Response('Not Found', { status: 404 });
+        const isDir = statSync(`./files/${path}`).isDirectory();
+        let content = null;
+        if(isDir) return new Response('Cannot get directory', { status: 403 });
+        else content = readFileSync(`./files/${path}`);
+
+        return new Response(content, { status: 200 });
+
+    } catch(err){ return new Response('Error', { status: 500 }); }
+
 }

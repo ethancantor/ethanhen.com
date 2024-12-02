@@ -54,14 +54,8 @@ export function FileUploadComponent({ folders }: { folders: string[] }) {
 		setUploading(true);
 		const formData = new FormData();
 		formData.append("folder", folder);
-		for (const file of files) {
-		console.log(file);
-		formData.append("file", file);
-		}
-		await fetch("/api/upload", {
-		method: "POST",
-		body: formData,
-		});
+		for (const file of files) formData.append("file", file);
+		await fetch("/api/upload", { method: "POST", body: formData, });
 		setUploading(false);
 	}, [files, folder]);
 
