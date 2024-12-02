@@ -16,10 +16,12 @@ async function fetchImages() {
 	for(const category of imgCateoryNames){
 		const images = fs.readdirSync(imageDir + '/' + category);
 		for(const image of images){
+			if(!(image.endsWith('.png') || image.endsWith('.jpg') || image.endsWith('.jpeg') || image.endsWith('.svg') || image.endsWith('.webp') || image.endsWith('.gif'))) continue;
 			const img: StaticImageData = await import(`/gallery/${category}/${image}`);
 			imageList.push({ src: img, category, alt: image, id: id++ });
 		}
 	}
+
 	return { imageList };
 }
 
@@ -30,7 +32,6 @@ export default async function Home() {
 	return (
 		<div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 p-4 sm:p-6 md:p-8 transition-colors duration-300">
 			<Gallery images={JSON.parse(JSON.stringify(imageList))}/>
-			{/* <Gallery imgList={JSON.parse(JSON.stringify(imageList))}/> */}
 		</div>
 	);
 }

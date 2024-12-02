@@ -47,14 +47,17 @@ export function FileUploadComponent({ folders } : { folders: string[] }) {
   const handleUpload = useCallback(async () => {
     const formData = new FormData();
     formData.append('folder', folder);
+    console.log('files', files);
     for(const file of files){
-        formData.append('file', file);
+      console.log(file);
+      formData.append('file', file);
     }
-    fetch('/api/files', {
+    const response = await fetch('/api/files', {
       method: 'POST',
       body: formData,
     });
-    setFiles([]);
+    console.log(response)
+    // setFiles([]);
   }, [files, folder])
 
   return (

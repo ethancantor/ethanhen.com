@@ -36,8 +36,6 @@ export function Gallery({images }: { images: imgListType[] }) {
 
   return (
     <div>
-      <div className="flex space-x-4 mb-6">
-      </div>
       <div className="">
         {
           categories.map((category) => (
