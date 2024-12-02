@@ -6,6 +6,8 @@ import { authOptions } from "@/utils/authOptions";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 
+export const dynamic = "force-dynamic";
+
 async function getGalleryFolders () {
     const imageDir = path.join(process.cwd(), "/gallery");
 	const folders = fs.readdirSync(imageDir);

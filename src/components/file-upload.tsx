@@ -4,7 +4,6 @@ import React, { useState, useCallback } from 'react'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Upload, File, X } from "lucide-react"
-import { uploadFiles } from '@/actions/file-upload'
 import AutocompleteInput from './autocomplete-input'
 import { signIn, signOut } from "next-auth/react"
 
@@ -44,6 +43,19 @@ export function FileUploadComponent({ folders } : { folders: string[] }) {
   const removeFile = useCallback((fileToRemove: File) => {
     setFiles(prevFiles => prevFiles.filter(file => file !== fileToRemove))
   }, [])
+
+  const handleUpload = useCallback(async () => {
+    const formData = new FormData();
+    formData.append('folder', folder);
+    for(const file of files){
+        formData.append('file', file);
+    }
+    fetch('/api/files', {
+      method: 'POST',
+      body: formData,
+    });
+    setFiles([]);
+  }, [files, folder])
 
   return (
     <div className="w-full max-w-md mx-auto bg-zinc-800 rounded-2xl px-5 pt-5 pb-3 flex flex-col gap-2">
@@ -96,12 +108,7 @@ export function FileUploadComponent({ folders } : { folders: string[] }) {
         <button className='text-zinc-900 bg-green-500 px-2 py-1 rounded-2xl text-center text-sm'
         
           onClick={() => {
-            const formData = new FormData();
-            formData.append('folder', folder);
-            for(const file of files){
-                formData.append('file', file);
-            }
-            uploadFiles(formData);
+            handleUpload();
           }}
         >Submit</button>
         <AutocompleteInput folders={folders} folderState={[folder, setFolder]}/>
