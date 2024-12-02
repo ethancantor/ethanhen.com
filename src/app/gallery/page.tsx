@@ -7,7 +7,7 @@ export type imgListType = { id: number, src: string | StaticImageData, alt: stri
 export const dynamic = "force-dynamic";
 
 async function fetchImages() {
-	const imageDir = path.join(process.cwd(), "/gallery");
+	const imageDir = path.join(process.cwd(), "/files/gallery");
 	const imgCateoryNames = fs.readdirSync(imageDir);
 
 	const imageList: imgListType[] = []
@@ -17,7 +17,7 @@ async function fetchImages() {
 		const images = fs.readdirSync(imageDir + '/' + category);
 		for(const image of images){
 			if(!(image.endsWith('.png') || image.endsWith('.jpg') || image.endsWith('.jpeg') || image.endsWith('.svg') || image.endsWith('.webp') || image.endsWith('.gif'))) continue;
-			const img: StaticImageData = await import(`/gallery/${category}/${image}`);
+			const img: StaticImageData = await import(`/files/gallery/${category}/${image}`);
 			imageList.push({ src: img, category, alt: image, id: id++ });
 		}
 	}

@@ -2,7 +2,7 @@
 
 import React, { Dispatch, SetStateAction, useState } from 'react'
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/react'
-import { CheckIcon, ChevronsUpDownIcon, PlusIcon } from 'lucide-react'
+import { ChevronsUpDownIcon, PlusIcon } from 'lucide-react'
 
 export default function AutocompleteInput({ folders, folderState }: { folders: string[], folderState: [string, Dispatch<SetStateAction<string>>] }) {
   const [query, setQuery] = useState('');
@@ -73,7 +73,7 @@ export default function AutocompleteInput({ folders, folderState }: { folders: s
                   }
                   value={item}
                 >
-                  {({ selected, active }) => (
+                  {({ selected }) => (
                     <>
                       <span
                         className={`block truncate ${
@@ -82,15 +82,6 @@ export default function AutocompleteInput({ folders, folderState }: { folders: s
                       >
                         {item}
                       </span>
-                      {selected ? (
-                        <span
-                          className={`absolute inset-y-0 left-0 flex items-center pl-3 text-white ${
-                            active && 'bg-zinc-600 '
-                          }`}
-                        >
-                          <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                        </span>
-                      ) : null}
                     </>
                   )}
                 </ComboboxOption>

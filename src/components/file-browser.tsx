@@ -13,9 +13,9 @@ interface FileBrowserProps {
 export default function FileBrowser({ files }: FileBrowserProps) {
 	return (
 		<div className="space-y-2">
-		{files.map((file, index) => (
-			<FileItem key={index} file={file} level={0} />
-		))}
+			{files.map((file, index) => (
+				<FileItem key={index} file={file} level={0} />
+			))}
 		</div>
 	);
 }	
@@ -52,14 +52,15 @@ function FileItem({ file, level, path = "" }: FileItemProps) {
 
 	return (
 		<div>
-			<div className={`flex items-center space-x-2 ${file.type === 'folder' && 'cursor-pointer'}`} onClick={file.type === "folder" ? toggleExpand : undefined}>
+			<div className={`flex items-center space-x-2 ${(file.type === 'folder' && (file.children && file.children.length > 0)) && 'cursor-pointer'}`} >
 				{icon}
-				<span className={file.type === "folder" ? "font-semibold" : ""}>{currentName.replace("files/", "")}</span>
-				{file.type === "folder" && (
+				<span className={file.type === "folder" ? "font-semibold" : ""} onClick={file.type === "folder" ? toggleExpand : undefined}>{currentName}</span>
+				{file.type === "folder" && (file.children && file.children.length > 0) && (
 				<Button
 					size="sm"
 					variant="ghost"
 					className="p-0 h-6 w-6"
+					onClick={file.type === "folder" ? toggleExpand : undefined}
 				>
 					{isExpanded ? (
 						<ChevronDown className="h-4 w-4" />

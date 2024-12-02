@@ -39,9 +39,9 @@ export function Gallery({images }: { images: imgListType[] }) {
       <div className="">
         {
           categories.map((category) => (
-            <div key={category} className="cursor-pointer hover:opacity-80 transition-opacity">
-              <h3 className="text-lg font-semibold mb-2">{category}</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div key={category}>
+              <h3 className="text-5xl font-semibold mb-2">{category}</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {images.filter((image) => image.category === category).map((image) => (
                   <div key={image.id} className="cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setSelectedImageIndex(images.indexOf(image))}>
                     <Image
