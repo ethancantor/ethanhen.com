@@ -4,9 +4,17 @@ import React, { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Upload, File, X, LoaderIcon } from "lucide-react";
-import AutocompleteInput from "./autocomplete-input";
+import FolderSelection from "./folder-selection";
 
-export function FileUploadComponent({ folders }: { folders: string[] }) {
+interface FolderType {
+    id: string
+    name: string
+    subfolders?: FolderType[]
+	parentPath?: string
+}
+
+
+export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 	const [files, setFiles] = useState<File[]>([]);
 	const [dragActive, setDragActive] = useState(false);
 	const [folder, setFolder] = useState("");
@@ -53,7 +61,7 @@ export function FileUploadComponent({ folders }: { folders: string[] }) {
 	const handleUpload = useCallback(async () => {
 		setUploading(true);
 		const formData = new FormData();
-		formData.append("folder", folder);
+		formData.append("folder", `${folder}`);
 		for (const file of files) formData.append("file", file);
 		await fetch("/api/upload", { method: "POST", body: formData, });
 		setUploading(false);
@@ -121,10 +129,7 @@ export function FileUploadComponent({ folders }: { folders: string[] }) {
 				>
 					Submit
 				</button>
-			<AutocompleteInput
-				folders={folders}
-				folderState={[folder, setFolder]}
-			/>
+				<FolderSelection folderState={[folder, setFolder]} initFolders={folders} />
 			</div>
 		</div>
 	);
