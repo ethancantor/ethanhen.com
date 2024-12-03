@@ -32,7 +32,7 @@ function getGalleryFolders(directory: string) {
 
 export default async function FileUpload() {
 
-    const folders = getGalleryFolders('./files/gallery');
+    const folders = getGalleryFolders('./files');
 
     const session = await getServerSession(authOptions);
     if(!session) redirect('/api/auth/signin')
