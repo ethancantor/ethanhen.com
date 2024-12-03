@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { FileIcon, FolderIcon, ChevronDown, ChevronUp, FileText, FileAudio, FileVideo, FileType, FileImage, FileCog, FileCode, Edit, FileX, FolderX, ShieldQuestionIcon, LoaderIcon, Download } from "lucide-react";
+import { FileIcon, FolderIcon, ChevronDown, ChevronUp, FileText, FileAudio, FileVideo, FileType, FileImage, FileCog, FileCode, Edit, FileX, FolderX, ShieldQuestionIcon, LoaderIcon, Download, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { File } from "@/app/files/page";
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from "./dialog";
-import { deleteFile, deleteFolder, renamePath } from "@/actions/file-editing";
+import { createSubFolder, deleteFile, deleteFolder, renamePath } from "@/actions/file-editing";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -32,6 +32,7 @@ interface FileItemProps {
 function FileItem({ file, level, path = "" }: FileItemProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [showEdit, setShowEdit] = useState(false);
+	const [showAddFolder, setShowAddFolder] = useState(false);
 
 	const fullPath = `${path}${file.name}`;
 	const [editPath, setEditPath] = useState(fullPath);
@@ -132,14 +133,27 @@ function FileItem({ file, level, path = "" }: FileItemProps) {
 						)}
 					</Button>
 					)}
+					{file.type === 'folder' && session?.user.role === 'admin' && (
+						<Button
+							onClick={() => setShowAddFolder(true)}
+							size="sm"
+							variant="ghost"
+							className="h-6 w-6"
+						>
+							<Plus className="h-4 w-4" />
+						</Button>
+					)}
+					<AddFolderDialog path={fullPath} showState={[showAddFolder, setShowAddFolder]} />
 				</div>
 				<div className="flex flex-row gap-1">
-					{ session?.user.role === 'admin' && <Button size="sm" variant="ghost" onClick={() => setShowEdit(true)}>
-						<Edit className="h-4 w-4"/>
-					</Button> }
-					{ session?.user.role !== 'admin' && file.type === "file" && <Button size="sm" variant="ghost" onClick={handleDownload}>
+					{ file.type === "file" && <Button size="sm" variant="ghost" onClick={handleDownload} 
+							className="h-6 w-6 p-1">
 						{downloadIcon}
 					</Button>}
+					{ session?.user.role === 'admin' && <Button size="sm" variant="ghost" onClick={() => setShowEdit(true)} 
+							className="h-6 w-6 p-1">
+						<Edit className="h-4 w-4"/>
+					</Button> }
 				</div>
 			</div>
 			{file.type === "folder" && isExpanded && (
@@ -167,4 +181,33 @@ function FileItem({ file, level, path = "" }: FileItemProps) {
 			</Dialog>
 		</div>
 	);
+}
+
+function AddFolderDialog({ path, showState }: { path: string, showState: [boolean, React.Dispatch<React.SetStateAction<boolean>>] }) {
+
+	const router = useRouter();
+	const [folderName, setFolderName] = useState('');
+	const [show, setShow] = showState;
+
+	const handleCreateFolder = async () => {
+		const response = await createSubFolder(path, folderName);
+		if(response.status === 200) {
+			setShow(false);
+			router.refresh();
+		}
+	}
+
+	return (
+		<Dialog open={show} onOpenChange={setShow}>
+			<DialogContent className="bg-zinc-900">
+				<DialogTitle>Create Folder</DialogTitle>
+				<input value={folderName} onChange={(e) => setFolderName(e.target.value)} className="bg-zinc-800 border-zinc-700 text-white focus:ring-zinc-600 focus:border-zinc-600 px-2 py-2 rounded-lg"/>
+				<DialogFooter className="flex flex-row justify-end gap-1 items-center">
+					<Button size="sm" variant="ghost" onClick={() => setShow(false)}>Cancel</Button>
+					<Button className="text-green-500" variant="ghost" onClick={() => handleCreateFolder()}>Save</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	)
+
 }
