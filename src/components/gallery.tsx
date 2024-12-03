@@ -7,9 +7,12 @@ import { imgListType } from '@/app/gallery/page'
 import { DialogDescription, DialogTitle } from './dialog'
 import { Button } from './ui/button' 
 import { ChevronLeft, ChevronRight, LinkIcon } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
 
-export function Gallery({images }: { images: imgListType[] }) {
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null)
+export function Gallery({images, image }: { images: imgListType[], image?: number }) {
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(image || null)
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [lastMoved, setLastMoved] = useState(0);
 
@@ -48,6 +51,17 @@ export function Gallery({images }: { images: imgListType[] }) {
   }, [handlePrevious, handleNext])
 
 
+  const handleImageClick = (index: number | null) => {
+    setSelectedImageIndex(index);
+    if(index !== null) {
+      setLastMoved(0);
+      router.replace(`${pathname}?image=${index}`);
+    } else {
+      router.replace(`${pathname}`);
+    }
+  }
+
+
   return (
     <div>
       <div className="">
@@ -60,7 +74,7 @@ export function Gallery({images }: { images: imgListType[] }) {
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {images.filter((image) => image.category === category).map((image) => (
-                  <div key={image.id} className="cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setSelectedImageIndex(images.indexOf(image))}>
+                  <div key={image.id} className="cursor-pointer hover:opacity-80 transition-opacity" onClick={() => handleImageClick(images.indexOf(image))}>
                     <Image
                       src={image.src}
                       alt={image.alt}
@@ -75,41 +89,23 @@ export function Gallery({images }: { images: imgListType[] }) {
           ))
         }
       </div>
-      <Dialog open={selectedImageIndex !== null} onOpenChange={(open) => !open && setSelectedImageIndex(null)} >
-        <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 w-full h-full" onKeyDown={handleKeyDown}>
+      <Dialog open={selectedImageIndex !== null} onOpenChange={(open) => !open && handleImageClick(null)}>
+        <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 w-full h-full outline-none" onKeyDown={handleKeyDown} >
           <DialogTitle />
           {selectedImageIndex !== null && images[selectedImageIndex] && (
-            <div className="w-full h-full ">
+            <div className="w-full h-full">
               <Image
                 src={images[selectedImageIndex].src}
                 alt={images[selectedImageIndex].alt}
                 fill
-                style={{ objectFit: 'contain' }}
+                className='w-full h-full object-contain'
+                unoptimized
               />
-              <Button
-                className="left-4 top-1/2 transform -translate-y-1/2 lg:absolute hidden"
-                onClick={handlePrevious}
-                aria-label="Previous image"
-                variant={'ghost'}
-                size={'icon'}
-              >
-                <ChevronLeft className="h-16 w-16" />
-              </Button>
-              <Button
-                className="right-4 top-1/2 transform -translate-y-1/2 lg:absolute hidden"
-                onClick={handleNext}
-                aria-label="Next image"
-                variant={'ghost'}
-                size='icon'
-              >
-                <ChevronRight className="h-16 w-16" />
-              </Button>
-
-              <div className='lg:hidden absolute left-0 top-0 translate translate-y-[4rem] w-[15%] h-[calc(100%-8rem)]'
+              <div className='absolute left-0 top-0 translate translate-y-[4rem] w-[15%] lg:w-[5%] h-[calc(100%-8rem)] cursor-pointer'
                 onClick={handlePrevious}  >
                 <ChevronLeft className={`h-full w-full text-white ${lastMoved < MAX_ARROW_TIMEOUT ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`} />
               </div>
-              <div className='lg:hidden absolute right-0 top-0 translate translate-y-[4rem] w-[15%] h-[calc(100%-8rem)]'
+              <div className='absolute right-0 top-0 translate translate-y-[4rem] w-[15%] lg:w-[5%]  h-[calc(100%-8rem)] cursor-pointer'
                 onClick={handleNext}>
                 <ChevronRight className={`h-full w-full text-white ${lastMoved < MAX_ARROW_TIMEOUT ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`} />
               </div>

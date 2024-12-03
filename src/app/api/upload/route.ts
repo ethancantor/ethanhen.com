@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 
 export async function POST(request: Request){
     const session = await getServerSession(authOptions);
-    if(session?.user?.role !== 'admin') return new Response('Unauthorized', { status: 401 });
+    if(!session) return new Response('Unauthorized', { status: 401 });
 
     const formData = await request.formData();
 

@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 
 export async function deleteFile(path: string) {
     const session = await getServerSession(authOptions);
-    if(session?.user?.role !== 'admin') return { message: 'Unauthorized',  status: 401 };
+    if(!session) return { message: 'Unauthorized',  status: 401 };
     
     existsSync(`./files/${path}`) && unlinkSync(`./files/${path}`);
     revalidatePath(`/files`);
@@ -17,7 +17,7 @@ export async function deleteFile(path: string) {
 
 export async function deleteFolder(folder: string) {
     const session = await getServerSession(authOptions);
-    if(session?.user?.role !== 'admin') return { message: 'Unauthorized',  status: 401 };
+    if(!session) return { message: 'Unauthorized',  status: 401 };
     
     existsSync(`./files/${folder}`) && rmdirSync(`./files/${folder}`, { recursive: true });
     revalidatePath(`/files`);
@@ -27,7 +27,7 @@ export async function deleteFolder(folder: string) {
 
 export async function renamePath(oldPath: string, newPath: string) {
     const session = await getServerSession(authOptions);
-    if(session?.user?.role !== 'admin') return { message: 'Unauthorized',  status: 401 };
+    if(!session) return { message: 'Unauthorized',  status: 401 };
     
     try {
         existsSync(`./files/${oldPath}`) && renameSync(`./files/${oldPath}`, `./files/${newPath}`);
@@ -39,7 +39,7 @@ export async function renamePath(oldPath: string, newPath: string) {
 
 export async function createSubFolder(path: string, folderName: string) {
     const session = await getServerSession(authOptions);
-    if(session?.user?.role !== 'admin') return { message: 'Unauthorized',  status: 401 };
+    if(!session) return { message: 'Unauthorized',  status: 401 };
     
     try {
         if(!existsSync(`./files/${path}`)) return { message: 'Not Found',  status: 404 };

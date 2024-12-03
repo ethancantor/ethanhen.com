@@ -1,77 +1,60 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
+import { LockIcon } from 'lucide-react'
 import { signIn } from 'next-auth/react'
-import Link from 'next/link'
 
-export function LoginPage({ error }: { error?: string }) {
-  const [username, setUsername] = useState('')
+export default function LoginPage({ error }: { error?: string }) {
   const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    signIn('credentials', { username, password, callbackUrl: '/' });
+    // Here you would typically handle the login logic
+    console.log('Login attempted with password:', password)
+    // Reset the password field after submission
+    signIn('credentials', { password, callbackUrl: '/' });
+    setPassword('')
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
-      <div className={`w-full max-w-md px-6 py-4 space-y-2 rounded-xl shadow-2xl border ${error ? 'border-red-500' : 'border-white/10'}`}>
-        <div className="text-center">
-          <h2 className="mt-2 text-3xl font-bold text-white">ethanhen.com</h2>
-          <Link href="/register" className="w-full text-white font-semibold px-2 py-1 rounded-lg hover:bg-zinc-800">Create an Account</Link>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="username" className="text-white">Username</Label>
-              <Input
-                id="username"
-                name="username"
-                type="text"
-                autoComplete="username"
-                required
-                className="mt-1 bg-zinc-800 border-zinc-700 text-white focus:ring-white focus:border-white"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="password" className="text-white">Password</Label>
-              <div className="relative mt-1">
+    <div className="flex items-center justify-center min-h-screen">
+      <Card className={`w-full max-w-md bg-zinc-900 ${ error ? 'border-red-400' : 'border-zinc-800'}`}>
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center text-zinc-100">Hey Ethan, sign in</CardTitle>
+          {error && <CardDescription className='text-center text-red-400'> did you really forget your password already...</CardDescription>}
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="password" className="sr-only">
+                Password
+              </Label>
+              <div className="relative">
                 <Input
                   id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  required
-                  className="bg-zinc-800 border-zinc-700 text-white pr-10 focus:ring-white focus:border-white"
+                  type="password"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 bg-zinc-800 text-zinc-100 placeholder-zinc-400 items-center flex"
+                  required
                 />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-white"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" aria-hidden="true" />
-                  ) : (
-                    <Eye className="h-5 w-5" aria-hidden="true" />
-                  )}
-                </button>
+                <LockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400" size={18} />
               </div>
             </div>
-          </div>
-          <Button type="submit" className="w-full bg-white hover:bg-zinc-200 text-black font-semibold">
-            Sign in
-          </Button>
+          </CardContent>
+          <CardFooter>
+            <Button type="submit" className="w-full bg-zinc-800 hover:bg-zinc-600 text-zinc-100">
+              Sign In
+            </Button>
+          </CardFooter>
         </form>
-      </div>
+      </Card>
     </div>
   )
 }
+

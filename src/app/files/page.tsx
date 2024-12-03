@@ -39,7 +39,7 @@ export default async function FilesPage() {
     const session = await getServerSession(authOptions);
 
     const sendFiles = [...galleryFiles, ...publicFiles];
-    if(session?.user?.role === 'admin') sendFiles.push(...privateFiles);
+    if(!session) sendFiles.push(...privateFiles);
 
     return (
         <div className="container mx-auto p-4">

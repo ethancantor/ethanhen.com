@@ -14,10 +14,10 @@ export const authOptions: AuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
-                const { valid, role } = await handleSignIn(credentials?.username || '', credentials?.password || '');
+                const { valid } = await handleSignIn(credentials?.password || '');
                 if(!valid) return null;
                 return { 
-                    id: randomUUID(), name: credentials?.username || '', role
+                    id: randomUUID(), name: 'ethan'
                 };
             }
         }),
@@ -29,7 +29,6 @@ export const authOptions: AuthOptions = {
                     ...token,
                     id: user.id,
                     name: user.name,
-                    role: user.role,
                 };
             }
             return token;
@@ -41,7 +40,6 @@ export const authOptions: AuthOptions = {
                     ...session.user,
                     id: token.id,
                     name: token.name,
-                    role: token.role,
                 },
             };
         },
@@ -49,6 +47,7 @@ export const authOptions: AuthOptions = {
     session: {
         strategy: "jwt",
         generateSessionToken: () => randomBytes(32).toString('hex'),
+        maxAge: 60 * 60 * 3, // 3 hours
     },
     secret: process.env.NEXTAUTH_SECRET,
     pages: {

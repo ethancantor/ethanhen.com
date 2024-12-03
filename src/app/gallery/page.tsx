@@ -25,13 +25,19 @@ async function fetchImages() {
 	return { imageList };
 }
 
-export default async function Home() {
+type SearchParams = {
+	image?: string
+}
+
+export default async function Home({ searchParams }: { searchParams: Promise<SearchParams> }) {
 
 	const { imageList } = await fetchImages();
 
+	const { image } = await searchParams;
+
 	return (
 		<div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 p-4 sm:p-6 md:p-8 transition-colors duration-300">
-			<Gallery images={JSON.parse(JSON.stringify(imageList))}/>
+			<Gallery images={JSON.parse(JSON.stringify(imageList))} image={image ? parseInt(image) : undefined} />
 		</div>
 	);
 }

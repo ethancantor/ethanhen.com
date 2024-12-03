@@ -133,7 +133,7 @@ function FileItem({ file, level, path = "" }: FileItemProps) {
 						)}
 					</Button>
 					)}
-					{file.type === 'folder' && session?.user.role === 'admin' && (
+					{file.type === 'folder' && Boolean(session) && (
 						<Button
 							onClick={() => setShowAddFolder(true)}
 							size="sm"
@@ -150,7 +150,7 @@ function FileItem({ file, level, path = "" }: FileItemProps) {
 							className="h-6 w-6 p-1">
 						{downloadIcon}
 					</Button>}
-					{ session?.user.role === 'admin' && <Button size="sm" variant="ghost" onClick={() => setShowEdit(true)} 
+					{ Boolean(session) && <Button size="sm" variant="ghost" onClick={() => setShowEdit(true)} 
 							className="h-6 w-6 p-1">
 						<Edit className="h-4 w-4"/>
 					</Button> }
