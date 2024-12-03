@@ -65,6 +65,7 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 		for (const file of files) formData.append("file", file);
 		await fetch("/api/upload", { method: "POST", body: formData, });
 		setUploading(false);
+		setFiles([]);
 	}, [files, folder]);
 
 	return (
@@ -121,14 +122,15 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 					</ul>
 				</div>
 			)}
-			<div className="w-full flex flex-row justify-center items-center gap-2">
-				<button
-					className="text-zinc-900 bg-green-500 px-2 py-1 rounded-2xl text-center text-sm"
+			<div className="w-full flex flex-col justify-center items-center gap-2">
+				<Button
+				variant={"ghost"}
+					className="w-full hover:bg-green-800"
 					onClick={() => handleUpload()}
-					disabled={uploading}
+					disabled={uploading || files.length === 0}
 				>
 					Submit
-				</button>
+				</Button>
 				<FolderSelection folderState={[folder, setFolder]} initFolders={folders} />
 			</div>
 		</div>

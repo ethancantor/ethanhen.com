@@ -165,13 +165,13 @@ export default function FolderSelection({ folderState, initFolders }: { folderSt
 
   return (
     <div className="w-full max-w-md mx-auto space-y-4">
-      <RadioGroup value={selectedFolderID || ''} onValueChange={setFolder}>
+      <RadioGroup value={selectedFolderID || ''} onValueChange={setFolder} className='bg-zinc-900 rounded-lg px-2 py-1'>
         {folders.map((folder) => renderFolder(folder))}
       </RadioGroup>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" className="w-full">
+          <Button variant="ghost" className="w-full hover:bg-zinc-900">
             <Plus className="mr-2 h-4 w-4" />
             New Folder
           </Button>
