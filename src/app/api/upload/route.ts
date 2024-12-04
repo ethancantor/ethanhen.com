@@ -1,5 +1,5 @@
 import { authOptions } from "@/utils/authOptions";
-import { createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "fs";
+import { createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from "fs";
 import { getServerSession } from "next-auth";
 
 const CHUNK_DIR = './chunks';
@@ -27,14 +27,13 @@ export async function POST(request: Request){
 }
 
 async function chunkAssembler(fileName: string, folder: string, totalChunks: number){ 
-    console.log('pssing', `./${folder}/${fileName}`)
-    const writer = createWriteStream(`./${folder}/${fileName}`);
+    existsSync(`${folder}`) || mkdirSync(`${folder}`, { recursive: true });
+    const writer = createWriteStream(`${folder}/${fileName}`);
     for(let i = 1; i <= totalChunks; i++){
-        console.log(`${CHUNK_DIR}/${fileName}.${i}`);
         try {
             const chunk = readFileSync(`${CHUNK_DIR}/${fileName}.${i}`);
             writer.write(chunk);
-            rmSync(`${CHUNK_DIR}/${fileName}.*`, { recursive: true, force: true });
+            unlinkSync(`${CHUNK_DIR}/${fileName}.${i}`);
         } catch(err){
             console.log(err);
         }

@@ -34,7 +34,7 @@ export default function HamburgerNav() {
     if(session) navItems.push({ label: 'file upload', href: '/fileupload' });
 
     return (
-        <div ref={menuRef} className="fixed top-3 left-3 flex flex-col">
+        <div ref={menuRef} className="absolute top-3 left-3 flex flex-col">
             <div className="w-fit h-fit cursor-pointer" ref={buttonRef} onClick={() => setIsOpen(!isOpen)} >
                 <HamburgerMenuIcon className="w-8 h-8"  />
             </div>

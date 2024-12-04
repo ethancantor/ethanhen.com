@@ -38,7 +38,7 @@ export default async function FileUpload() {
     if(!session) redirect('/api/auth/signin')
 
     return (
-        <div className="w-screen h-screen flex justify-center items-center">
+        <div className="w-screen h-screen py-20 overflow-x-hidden">
             <FileUploadComponent folders={folders}/>
         </div>
     )

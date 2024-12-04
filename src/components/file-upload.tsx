@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Upload, File, X, LoaderIcon } from "lucide-react";
+import { Upload, File, X, LoaderIcon, Folder, ChevronDown } from "lucide-react";
 import FolderSelection from "./folder-selection";
 
 interface FolderType {
@@ -13,11 +13,15 @@ interface FolderType {
 	parentPath?: string
 }
 
+interface FileWithPath extends File {
+	path?: string
+}
+
 
 export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
-	const [files, setFiles] = useState<File[]>([]);
+	const [files, setFiles] = useState<FileWithPath[]>([]);
 	const [dragActive, setDragActive] = useState(false);
-	const [folder, setFolder] = useState("");
+	const [folder, setFolder] = useState("./files");
 	const [uploading, setUploading] = useState(false);
 	const [wasError, setWasError] = useState(false);
 
@@ -34,24 +38,60 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 		setDragActive(false);
 	}, []);
 
-	const onDrop = useCallback((e: React.DragEvent) => {
+	const processEntry = useCallback(async (entry: FileSystemEntry, path = folder, idx: number = 0): Promise<FileWithPath[]> => {
+		return new Promise((resolve) => {
+			if (entry.isFile) {
+				(entry as FileSystemFileEntry).file((file: File) => {
+					const fileWithPath = Object.assign(file, { path })
+					resolve([fileWithPath])
+				})
+			} else if (entry.isDirectory) {
+				const dirReader = (entry as FileSystemDirectoryEntry).createReader()
+				dirReader.readEntries(async (entries) => {
+					const filesInDir = await Promise.all( entries.map((e) => processEntry(e, `${path}/${entry.name}`, idx)) )
+					resolve(filesInDir.flat())
+				})
+			} else resolve([])
+		})
+	}, [folder]);
+
+	const onDrop = useCallback(async (e: React.DragEvent) => {
 		e.preventDefault();
 		e.stopPropagation();
 		setDragActive(false);
-		if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-		setFiles((prevFiles) => [
-			...prevFiles,
-			...Array.from(e.dataTransfer.files),
-		]);
+		
+		const items = e.dataTransfer.items;
+		const files: FileWithPath[] = [];
+
+		console.log(items.length);
+
+		for (let i = 0; i < items.length; i++) {
+			const item = items[i];
+			console.log('entry', item, i);
+			if(item.kind === 'file'){
+				const entry = item.webkitGetAsEntry();
+				if (entry) {
+					const foundFiles = await processEntry(entry, folder, i);
+					files.push(...foundFiles);
+				} else {
+					console.log('missing entry', i);
+				}
+			} else {
+				console.log('not file', i, item.kind);
+			}
+			console.log('done', files.length, i);
 		}
-	}, []);
+		console.log('done2', files.length);
+		setFiles((prev) => [...prev, ...files]);
+	}, [folder, processEntry]);
 
 	const onFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files[0]) {
-		setFiles((prevFiles) => [
-			...prevFiles,
-			...Array.from(e.target.files as FileList),
-		]);
+			const filesWithPath = Array.from(e.target.files).map((file) => Object.assign(file, { path: folder }))
+			setFiles((prevFiles) => [
+				...prevFiles,
+				...filesWithPath,
+			]);
 		}
 	}, []);
 
@@ -76,7 +116,7 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 			if(wasError) erroredFiles.push(file);
 		}
 
-		async function sendFile(file: File) {
+		async function sendFile(file: FileWithPath) {
 			let start = 0;
 			let currentChunk = 1;
 			const totalChunks = Math.ceil(file.size / CHUNKSIZE);
@@ -84,7 +124,7 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 			while(start < file.size){
 				const chunk = file.slice(start, start + CHUNKSIZE);
 				start += CHUNKSIZE;
-				const response = await sendChunk(chunk, file.name, currentChunk, totalChunks);
+				const response = await sendChunk(chunk, file.name, currentChunk, totalChunks, file.path || folder);
 				responseList.push(response);
 				currentChunk++;
 			}
@@ -93,10 +133,10 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 			return wasError;
 		}
 
-		async function sendChunk(chunk: Blob, fileName: string, currentChunk: number, totalChunks: number) {
+		async function sendChunk(chunk: Blob, fileName: string, currentChunk: number, totalChunks: number, path: string) {
 			const formData = new FormData();
 			formData.append("name", fileName);
-			formData.append("folder", `${folder}`);
+			formData.append("folder", `${path}`);
 			formData.append("file", chunk);
 			formData.append('totalChunk', totalChunks.toString());
 			formData.append('currentChunk', currentChunk.toString());
@@ -108,6 +148,14 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 		setUploading(false);
 
 	}, [files, folder]);
+
+	const fileGroups: string[] = files.reduce((acc: string[], file: FileWithPath) => {
+		const path = file.path || folder;
+		if(!acc.includes(path)) acc.push(path);
+		return acc;
+	}, []);
+
+	console.log(files);
 
 	return (
 		<div className="w-full max-w-md mx-auto bg-zinc-800 rounded-2xl px-5 pt-5 pb-3 flex flex-col gap-2">
@@ -140,31 +188,19 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 				</p> }
 			</div>
 			</div>
-			<div className="max-h-[75vh] overflow-y-auto">
+			<div className="max-h-[60vh] overflow-y-auto">
+				{fileGroups.length > 0 && (
+					<div>
+						<h3 className="text-lg font-semibold mb-2">Selected Folders:</h3>
+						{fileGroups.map((group, index) => (
+							<FileGroup key={index} files={files.filter(file => file.path === group)} wasError={wasError} group={group} removeFile={removeFile} />
+						))}
+					</div>	
+				)}
 				{files.length > 0 && (
 					<div className="mt-4">
 						<h3 className="text-lg font-semibold mb-2">Selected Files:</h3>
-						<ul className="space-y-2">
-							{files.map((file, index) => (
-							<li
-								key={index}
-								className={`flex items-center justify-between bg-zinc-900 p-2 rounded-2xl ${wasError && 'outline outline-1 outline-red-500'}`}
-							>
-								<div className="flex items-center">
-									<File className="h-5 w-5 mr-2 text-zinc-500" />
-									<span className="text-sm truncate">{file.name}</span>
-								</div>
-								<Button
-									variant="ghost"
-									size="icon"
-									onClick={() => removeFile(file)}
-									aria-label={`Remove ${file.name}`}
-								>
-									<X className="h-4 w-4" />
-								</Button>
-							</li>
-							))}
-						</ul>
+						
 					</div>
 				)}
 			</div>
@@ -181,4 +217,50 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 			</div>
 		</div>
 	);
+}
+
+
+function FileGroup({ files, wasError, group, removeFile }: { files: FileWithPath[], wasError: boolean, group: string, removeFile: (file: FileWithPath) => void }) {
+
+	const [open, setOpen] = useState(false);
+
+	return (
+		<div
+			className={`flex items-start flex-col gap-3 bg-zinc-900 p-2 rounded-lg`}
+		>
+			<div className="flex flex-row justify-between gap-2 w-full h-full items-center">
+				<div className="flex items-center p-4">
+					<Folder className="h-5 w-5 mr-2 text-zinc-500" />
+					<span className="text-lg truncate">{group}</span>
+				</div>
+				<div>{files.length}</div>
+				<Button variant="ghost" size="icon" onClick={() => setOpen(!open)}>
+					<ChevronDown className={`w-4 h-4 ${open ? 'rotate-180' : ''}`} />
+				</Button>
+			</div>
+			{open &&
+				<ul className="space-y-2 w-full">
+					{files.map((file, index) => (
+					<li
+						key={index}
+						className={`flex items-center justify-between even:bg-zinc-800 odd:bg-zinc-700 w-full p-2 rounded-2xl ${wasError && 'outline outline-1 outline-red-500'}`}
+					>
+						<div className="flex items-center">
+							<File className="h-5 w-5 mr-2 text-zinc-500" />
+							<span className="text-sm truncate">{file.name}</span>
+						</div>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => removeFile(file)}
+							aria-label={`Remove ${file.name}`}
+						>
+							<X className="h-4 w-4" />
+						</Button>
+					</li>
+					))}
+				</ul>
+			}
+		</div>
+	) 
 }
