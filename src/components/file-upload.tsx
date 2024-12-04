@@ -19,6 +19,7 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 	const [dragActive, setDragActive] = useState(false);
 	const [folder, setFolder] = useState("");
 	const [uploading, setUploading] = useState(false);
+	const [wasError, setWasError] = useState(false);
 
 	const onDragOver = useCallback((e: React.DragEvent) => {
 		e.preventDefault();
@@ -62,29 +63,48 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 		setUploading(true);
 
 		const CHUNKSIZE = 1024 * 1024; // 1MB
+		const NUMRETIRES = 3;
+
+		const erroredFiles = [];
 		for(const file of files){
+			let numErrors = 0;
+			let wasError = true;
+			while(wasError && numErrors < NUMRETIRES){
+				wasError = await sendFile(file);
+				if(wasError) numErrors++;
+			}
+			if(wasError) erroredFiles.push(file);
+		}
+
+		async function sendFile(file: File) {
 			let start = 0;
 			let currentChunk = 1;
 			const totalChunks = Math.ceil(file.size / CHUNKSIZE);
+			const responseList = [];
 			while(start < file.size){
 				const chunk = file.slice(start, start + CHUNKSIZE);
 				start += CHUNKSIZE;
-				sendChunk(chunk, file.name, currentChunk, totalChunks);
+				const response = await sendChunk(chunk, file.name, currentChunk, totalChunks);
+				responseList.push(response);
 				currentChunk++;
 			}
 
+			const wasError = responseList.some(response => !response.ok) || responseList.length !== totalChunks;
+			return wasError;
 		}
 
-		function sendChunk(chunk: Blob, fileName: string, currentChunk: number, totalChunks: number) {
+		async function sendChunk(chunk: Blob, fileName: string, currentChunk: number, totalChunks: number) {
 			const formData = new FormData();
 			formData.append("name", fileName);
 			formData.append("folder", `${folder}`);
 			formData.append("file", chunk);
 			formData.append('totalChunk', totalChunks.toString());
 			formData.append('currentChunk', currentChunk.toString());
-			fetch("/api/upload", { method: "POST", body: formData, });
+			const response = await fetch("/api/upload", { method: "POST", body: formData, });
+			return response;
 		}
-		// setFiles([]);
+		setWasError(erroredFiles.length > 0);
+		setFiles(erroredFiles);
 		setUploading(false);
 
 	}, [files, folder]);
@@ -115,6 +135,9 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 				<p className="mt-2 text-sm text-white">
 					Drag and drop files here, or click to select files
 				</p>
+				{ wasError && <p className="mt-2 text-sm text-red-500">
+					Looks like some files failed to upload. Please try them again
+				</p> }
 			</div>
 			</div>
 			<div className="max-h-[75vh] overflow-y-auto">
@@ -125,19 +148,19 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 							{files.map((file, index) => (
 							<li
 								key={index}
-								className="flex items-center justify-between bg-zinc-900 p-2 rounded-2xl"
+								className={`flex items-center justify-between bg-zinc-900 p-2 rounded-2xl ${wasError && 'outline outline-1 outline-red-500'}`}
 							>
 								<div className="flex items-center">
-								<File className="h-5 w-5 mr-2 text-zinc-500" />
-								<span className="text-sm truncate">{file.name}</span>
+									<File className="h-5 w-5 mr-2 text-zinc-500" />
+									<span className="text-sm truncate">{file.name}</span>
 								</div>
 								<Button
-								variant="ghost"
-								size="icon"
-								onClick={() => removeFile(file)}
-								aria-label={`Remove ${file.name}`}
+									variant="ghost"
+									size="icon"
+									onClick={() => removeFile(file)}
+									aria-label={`Remove ${file.name}`}
 								>
-								<X className="h-4 w-4" />
+									<X className="h-4 w-4" />
 								</Button>
 							</li>
 							))}

@@ -1,7 +1,8 @@
 import path from "path";
 import fs from "fs";
 import { StaticImageData } from "next/image";
-import { Gallery } from "@/components/gallery";
+import Gallery from "@/components/gallery";
+import { Suspense } from "react";
 
 export type imgListType = { id: number, src: string | StaticImageData, alt: string, category: string }
 export const dynamic = "force-dynamic";
@@ -41,7 +42,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
 
 	return (
 		<div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 p-4 sm:p-6 md:p-8 transition-colors duration-300">
-			<Gallery images={JSON.parse(JSON.stringify(imageList))} image={image ? parseInt(image) : undefined} />
+			<Suspense fallback={<div/>}>
+				<Gallery images={JSON.parse(JSON.stringify(imageList))} image={image ? parseInt(image) : undefined} />
+			</Suspense>
 		</div>
 	);
 }

@@ -1,5 +1,5 @@
 import { authOptions } from "@/utils/authOptions";
-import { createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
+import { createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "fs";
 import { getServerSession } from "next-auth";
 
 const CHUNK_DIR = './chunks';
@@ -21,7 +21,6 @@ export async function POST(request: Request){
     const buff = Buffer.from(buffer);
     writeFileSync(`${CHUNK_DIR}/${fileName}.${currentChunk}`, buff);
     const allFiles = readdirSync(`${CHUNK_DIR}`).filter(file => file.startsWith(`${fileName}.`));
-    console.log(allFiles.length, totalChunk, fileName, allFiles.length == +totalChunk, `./${folder}/${fileName}`);
     if(allFiles.length == parseInt(totalChunk)) await chunkAssembler(fileName, folder, parseInt(totalChunk));
 
     return new Response('OK', { status: 200 });
@@ -35,13 +34,12 @@ async function chunkAssembler(fileName: string, folder: string, totalChunks: num
         try {
             const chunk = readFileSync(`${CHUNK_DIR}/${fileName}.${i}`);
             writer.write(chunk);
-
+            rmSync(`${CHUNK_DIR}/${fileName}.*`, { recursive: true, force: true });
         } catch(err){
             console.log(err);
         }
     }
     writer.close();
-    // rmSync(`${CHUNK_DIR}/${fileName}.*`, { recursive: true, force: true });
 }
 
 export async function GET(request: Request){

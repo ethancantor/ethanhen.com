@@ -8,8 +8,9 @@ import { DialogDescription, DialogTitle } from './dialog'
 import { Button } from './ui/button' 
 import { ChevronLeft, ChevronRight, LinkIcon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 
-export function Gallery({images, image }: { images: imgListType[], image?: number }) {
+function Gallery({images, image }: { images: imgListType[], image?: number }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(image || null)
   const router = useRouter();
   const pathname = usePathname();
@@ -127,3 +128,5 @@ function CopyButton({ category }: { category: string }) {
     </Button>
   )
 }
+
+export default dynamic(() => Promise.resolve(Gallery), { ssr: false });
