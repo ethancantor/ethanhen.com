@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import localFont from "next/font/local"
 import NextAuthSessionProvider from "@/components/SessionProvider/SessionProvider";
+import HamburgerNav from "@/components/hamburger-nav";
 
 export const metadata: Metadata = {
   title: "ethanhen.com",
@@ -31,6 +32,7 @@ export default function RootLayout({
             enableSystem
           >
             <NextAuthSessionProvider >
+              <HamburgerNav />
               {children}
           </NextAuthSessionProvider>
         </ThemeProvider>
