@@ -17,8 +17,12 @@ async function fetchImages() {
 		const images = fs.readdirSync(imageDir + '/' + category);
 		for(const image of images){
 			if(!(image.endsWith('.png') || image.endsWith('.jpg') || image.endsWith('.jpeg') || image.endsWith('.svg') || image.endsWith('.webp') || image.endsWith('.gif'))) continue;
-			const img: StaticImageData = await import(`/files/gallery/${category}/${image}`);
-			imageList.push({ src: img, category, alt: image, id: id++ });
+			try{ 
+				const img: StaticImageData = await import(`/files/gallery/${category}/${image}`);
+				imageList.push({ src: img, category, alt: image, id: id++ });
+			} catch(err){
+				console.log(err);
+			}
 		}
 	}
 

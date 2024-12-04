@@ -60,12 +60,33 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 
 	const handleUpload = useCallback(async () => {
 		setUploading(true);
-		const formData = new FormData();
-		formData.append("folder", `${folder}`);
-		for (const file of files) formData.append("file", file);
-		await fetch("/api/upload", { method: "POST", body: formData, });
+
+		const CHUNKSIZE = 1024 * 1024; // 1MB
+		for(const file of files){
+			let start = 0;
+			let currentChunk = 1;
+			const totalChunks = Math.ceil(file.size / CHUNKSIZE);
+			while(start < file.size){
+				const chunk = file.slice(start, start + CHUNKSIZE);
+				start += CHUNKSIZE;
+				sendChunk(chunk, file.name, currentChunk, totalChunks);
+				currentChunk++;
+			}
+
+		}
+
+		function sendChunk(chunk: Blob, fileName: string, currentChunk: number, totalChunks: number) {
+			const formData = new FormData();
+			formData.append("name", fileName);
+			formData.append("folder", `${folder}`);
+			formData.append("file", chunk);
+			formData.append('totalChunk', totalChunks.toString());
+			formData.append('currentChunk', currentChunk.toString());
+			fetch("/api/upload", { method: "POST", body: formData, });
+		}
+		// setFiles([]);
 		setUploading(false);
-		setFiles([]);
+
 	}, [files, folder]);
 
 	return (
@@ -96,32 +117,34 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 				</p>
 			</div>
 			</div>
-			{files.length > 0 && (
-				<div className="mt-4">
-					<h3 className="text-lg font-semibold mb-2">Selected Files:</h3>
-					<ul className="space-y-2">
-						{files.map((file, index) => (
-						<li
-							key={index}
-							className="flex items-center justify-between bg-zinc-900 p-2 rounded-2xl"
-						>
-							<div className="flex items-center">
-							<File className="h-5 w-5 mr-2 text-zinc-500" />
-							<span className="text-sm truncate">{file.name}</span>
-							</div>
-							<Button
-							variant="ghost"
-							size="icon"
-							onClick={() => removeFile(file)}
-							aria-label={`Remove ${file.name}`}
+			<div className="max-h-[75vh] overflow-y-auto">
+				{files.length > 0 && (
+					<div className="mt-4">
+						<h3 className="text-lg font-semibold mb-2">Selected Files:</h3>
+						<ul className="space-y-2">
+							{files.map((file, index) => (
+							<li
+								key={index}
+								className="flex items-center justify-between bg-zinc-900 p-2 rounded-2xl"
 							>
-							<X className="h-4 w-4" />
-							</Button>
-						</li>
-						))}
-					</ul>
-				</div>
-			)}
+								<div className="flex items-center">
+								<File className="h-5 w-5 mr-2 text-zinc-500" />
+								<span className="text-sm truncate">{file.name}</span>
+								</div>
+								<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => removeFile(file)}
+								aria-label={`Remove ${file.name}`}
+								>
+								<X className="h-4 w-4" />
+								</Button>
+							</li>
+							))}
+						</ul>
+					</div>
+				)}
+			</div>
 			<div className="w-full flex flex-col justify-center items-center gap-2">
 				<Button
 				variant={"ghost"}

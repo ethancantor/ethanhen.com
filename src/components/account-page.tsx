@@ -24,7 +24,7 @@ export function AccountPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-8">
-      <Card className="w-full max-w-md border border-white/10 text-white shadow-2xl">
+      <Card className="w-full max-w-md text-white shadow-2xl">
         <CardHeader className="space-y-1 px-4 sm:px-6">
           <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight">create an ethanhen.com account</CardTitle>
         </CardHeader>

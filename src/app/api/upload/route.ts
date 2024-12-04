@@ -1,6 +1,8 @@
 import { authOptions } from "@/utils/authOptions";
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "fs";
+import { createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import { getServerSession } from "next-auth";
+
+const CHUNK_DIR = './chunks';
 
 export async function POST(request: Request){
     const session = await getServerSession(authOptions);
@@ -8,27 +10,38 @@ export async function POST(request: Request){
 
     const formData = await request.formData();
 
-    const files = formData.getAll('file') as File[];
+    const blob = formData.get('file') as Blob;
+    const fileName = formData.get('name') as string;
     const folder = formData.get('folder') as string;
+    const totalChunk = formData.get('totalChunk') as string;
+    const currentChunk = formData.get('currentChunk') as string;
 
-    for(const file of files){
-        if(!file) continue;
-        const buffer = await file.arrayBuffer();
-        const buff = Buffer.from(buffer);
-        existsSync(`${folder}`) || mkdirSync(`${folder}`, { recursive: true });
-        let fileNumber = 0;
-        let fileRepeat = '';
-        const fileName = file.name.split('.').slice(0, -1).join('.');
-        const fileExtention = file.name.split('.').slice(-1)[0];
-        while(existsSync(`${folder}/${fileName}${fileRepeat}.${fileExtention}`)){
-            fileNumber++;
-            fileRepeat = `(${fileNumber})`;
-        }
-        writeFileSync(`${folder}/${fileName}${fileRepeat}.${fileExtention}`, buff);
-        console.log(`${folder}/${fileName}${fileRepeat}.${fileExtention}`);
-    }
+    existsSync(CHUNK_DIR) || mkdirSync(CHUNK_DIR, { recursive: true });
+    const buffer = await blob.arrayBuffer();
+    const buff = Buffer.from(buffer);
+    writeFileSync(`${CHUNK_DIR}/${fileName}.${currentChunk}`, buff);
+    const allFiles = readdirSync(`${CHUNK_DIR}`).filter(file => file.startsWith(`${fileName}.`));
+    console.log(allFiles.length, totalChunk, fileName, allFiles.length == +totalChunk, `./${folder}/${fileName}`);
+    if(allFiles.length == parseInt(totalChunk)) await chunkAssembler(fileName, folder, parseInt(totalChunk));
 
     return new Response('OK', { status: 200 });
+}
+
+async function chunkAssembler(fileName: string, folder: string, totalChunks: number){ 
+    console.log('pssing', `./${folder}/${fileName}`)
+    const writer = createWriteStream(`./${folder}/${fileName}`);
+    for(let i = 1; i <= totalChunks; i++){
+        console.log(`${CHUNK_DIR}/${fileName}.${i}`);
+        try {
+            const chunk = readFileSync(`${CHUNK_DIR}/${fileName}.${i}`);
+            writer.write(chunk);
+
+        } catch(err){
+            console.log(err);
+        }
+    }
+    writer.close();
+    // rmSync(`${CHUNK_DIR}/${fileName}.*`, { recursive: true, force: true });
 }
 
 export async function GET(request: Request){
