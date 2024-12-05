@@ -1,13 +1,15 @@
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    images: {
-        remotePatterns: [
-            {
-                protocol: "https",
-                hostname: "picsum.photos",
-            },
-        ],
-    },
+    reactStrictMode: true,
+    webpack: (config)=> {
+        // config.module.rules.push({
+        //     test: /\.ARW|.dng|.tif/,
+        //     type: 'asset/resource'
+        // })
+
+        return config
+    }
 };
 
 export default nextConfig;

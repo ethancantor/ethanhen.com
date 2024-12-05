@@ -14,22 +14,45 @@ export const authOptions: AuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
-                console.log('HANDLE SIGN IN');
-                const valid = await handleSignIn(credentials?.username || '', credentials?.password || '');
+                const { valid } = await handleSignIn(credentials?.password || '');
                 if(!valid) return null;
                 return { 
-                    id: randomUUID(), name: credentials?.username || '' 
+                    id: randomUUID(), name: 'ethan'
                 };
             }
         }),
     ],
+    callbacks: {
+        jwt: ({ token, user }) => {
+            if (user) {
+                return {
+                    ...token,
+                    id: user.id,
+                    name: user.name,
+                };
+            }
+            return token;
+        },
+        session: ({ session, token }) => {
+            return {
+                ...session,
+                user: {
+                    ...session.user,
+                    id: token.id,
+                    name: token.name,
+                },
+            };
+        },
+    },
     session: {
         strategy: "jwt",
         generateSessionToken: () => randomBytes(32).toString('hex'),
+        maxAge: 60 * 60 * 3, // 3 hours
     },
     secret: process.env.NEXTAUTH_SECRET,
     pages: {
-        signIn: '/login'
+        signIn: '/login',
+        signOut: '/logout',
     },
     debug: true
 }

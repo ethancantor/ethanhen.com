@@ -1,34 +1,51 @@
 import path from "path";
 import fs from "fs";
-import { Gallery } from "./components/Gallery";
 import { StaticImageData } from "next/image";
+import Gallery from "@/components/gallery";
+import { Suspense } from "react";
 
-export type imgListType = {image: StaticImageData, categoryName: string, imgName: string}
+export type imgListType = { id: number, src: string | StaticImageData, alt: string, category: string, stats: fs.Stats }
 export const dynamic = "force-dynamic";
 
 async function fetchImages() {
-	const imageDir = path.join(process.cwd(), "/public/gallery");
+	const imageDir = path.join(process.cwd(), "/files/gallery");
 	const imgCateoryNames = fs.readdirSync(imageDir);
 
 	const imageList: imgListType[] = []
+	let id = 0;
 
-	for(const categoryName of imgCateoryNames){
-		const images = fs.readdirSync(imageDir + '/' + categoryName);
+	for(const category of imgCateoryNames){
+		const images = fs.readdirSync(imageDir + '/' + category);
 		for(const image of images){
-			const img: StaticImageData = await import(`/public/gallery/${categoryName}/${image}`);
-			imageList.push({image: img, categoryName, imgName: image});
+			if(!(image.endsWith('.png') || image.endsWith('.jpg') || image.endsWith('.jpeg') || image.endsWith('.svg') || image.endsWith('.webp') || image.endsWith('.gif'))) continue;
+			try{ 
+				const img = await import(`/files/gallery/${category}/${image}`);
+				const stats = fs.statSync(`./files/gallery/${category}/${image}`);
+				imageList.push({ src: img, category, alt: image, id: id++, stats });
+			} catch(err){
+				console.log(err);
+			}
 		}
 	}
+
 	return { imageList };
 }
 
-export default async function Home() {
+type SearchParams = {
+	image?: string
+}
+
+export default async function Home({ searchParams }: { searchParams: Promise<SearchParams> }) {
 
 	const { imageList } = await fetchImages();
 
+	const { image } = await searchParams;
+
 	return (
 		<div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 p-4 sm:p-6 md:p-8 transition-colors duration-300">
-			<Gallery imgList={JSON.parse(JSON.stringify(imageList))}/>
+			<Suspense fallback={<div/>}>
+				<Gallery images={JSON.parse(JSON.stringify(imageList))} image={image ? parseInt(image) : undefined} />
+			</Suspense>
 		</div>
 	);
 }
