@@ -1,6 +1,6 @@
 import FileBrowser from "@/components/file-browser"
 import { authOptions } from "@/utils/authOptions";
-import { readdirSync, statSync } from "fs";
+import { readdirSync, Stats, statSync } from "fs";
 import { getServerSession } from "next-auth";
 import path from "path";
 import React from "react"
@@ -11,6 +11,7 @@ export interface File {
 	name: string;
 	type: "file" | "folder";
 	children?: File[];
+    stats: Stats
 }
 
 function recurDir(directory: string) {
@@ -20,9 +21,9 @@ function recurDir(directory: string) {
         const absolute = path.join(directory, file);
         if (statSync(absolute).isDirectory()) {
             subFiles.push(...recurDir(absolute));
-            return files.push({name: file, type: 'folder', children: subFiles});
+            return files.push({name: file, type: 'folder', children: subFiles, stats: statSync(absolute)});
         } else {
-            return files.push({name: file, type: 'file', children: subFiles});
+            return files.push({name: file, type: 'file', children: subFiles, stats: statSync(absolute)});
 
         }
     });
@@ -44,7 +45,7 @@ export default async function FilesPage() {
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">File Browser</h1>
-            <FileBrowser files={sendFiles} />
+            <FileBrowser files={JSON.parse(JSON.stringify(sendFiles))} />
         </div>
     )
 };

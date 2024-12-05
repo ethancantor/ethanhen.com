@@ -4,7 +4,7 @@ import { StaticImageData } from "next/image";
 import Gallery from "@/components/gallery";
 import { Suspense } from "react";
 
-export type imgListType = { id: number, src: string | StaticImageData, alt: string, category: string }
+export type imgListType = { id: number, src: string | StaticImageData, alt: string, category: string, stats: fs.Stats }
 export const dynamic = "force-dynamic";
 
 async function fetchImages() {
@@ -20,7 +20,8 @@ async function fetchImages() {
 			if(!(image.endsWith('.png') || image.endsWith('.jpg') || image.endsWith('.jpeg') || image.endsWith('.svg') || image.endsWith('.webp') || image.endsWith('.gif'))) continue;
 			try{ 
 				const img = await import(`/files/gallery/${category}/${image}`);
-				imageList.push({ src: img, category, alt: image, id: id++ });
+				const stats = fs.statSync(`./files/gallery/${category}/${image}`);
+				imageList.push({ src: img, category, alt: image, id: id++, stats });
 			} catch(err){
 				console.log(err);
 			}

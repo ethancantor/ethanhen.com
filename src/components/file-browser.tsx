@@ -113,12 +113,20 @@ function FileItem({ file, level, path = "" }: FileItemProps) {
 		}
 	}
 
+	const sizeConverter = (bytes: number) => {
+		const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+		const i = Math.floor(Math.log2(bytes) / 10);
+		return `${(bytes / 2 ** (i * 10)).toFixed(2)} ${sizes[i]}`;
+	}
+
 	return (
 		<div>
 			<div className={`flex items-center justify-between ${level % 2 === 0 ? 'bg-zinc-800' : 'bg-zinc-700'} px-2 py-1 rounded-lg ${(file.type === 'folder' && (file.children && file.children.length > 0)) && 'cursor-pointer'}`} >
 				<div className="flex flex-row items-center space-x-2">
 					{icon}
 					<span className={file.type === "folder" ? "font-semibold" : ""} onClick={file.type === "folder" ? toggleExpand : undefined}>{file.name}</span>
+					<span className="text-sm">{new Date(file.stats.ctime).toLocaleDateString()}</span>
+					<span className="text-sm">{file.type === 'folder' ? '-' : sizeConverter(file.stats.size)}</span>
 					{file.type === "folder" && (file.children && file.children.length > 0) && (
 					<Button
 						size="sm"

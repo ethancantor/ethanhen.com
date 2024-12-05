@@ -61,28 +61,21 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 		setDragActive(false);
 		
 		const items = e.dataTransfer.items;
-		const files: FileWithPath[] = [];
-
-		console.log(items.length);
+		const promiseList: Promise<FileWithPath[]>[] = [];
 
 		for (let i = 0; i < items.length; i++) {
 			const item = items[i];
-			console.log('entry', item, i);
 			if(item.kind === 'file'){
 				const entry = item.webkitGetAsEntry();
 				if (entry) {
-					const foundFiles = await processEntry(entry, folder, i);
-					files.push(...foundFiles);
-				} else {
-					console.log('missing entry', i);
-				}
-			} else {
-				console.log('not file', i, item.kind);
+					const foundFiles = processEntry(entry, folder, i);
+					promiseList.push(foundFiles);
+				} 
 			}
-			console.log('done', files.length, i);
 		}
-		console.log('done2', files.length);
-		setFiles((prev) => [...prev, ...files]);
+
+		const allFiles = await Promise.all(promiseList);
+		setFiles((prev) => [...prev, ...allFiles.flat()]);
 	}, [folder, processEntry]);
 
 	const onFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,7 +86,7 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 				...filesWithPath,
 			]);
 		}
-	}, []);
+	}, [folder]);
 
 	const removeFile = useCallback((fileToRemove: File) => {
 		setFiles((prevFiles) => prevFiles.filter((file) => file !== fileToRemove));
@@ -155,8 +148,6 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 		return acc;
 	}, []);
 
-	console.log(files);
-
 	return (
 		<div className="w-full max-w-md mx-auto bg-zinc-800 rounded-2xl px-5 pt-5 pb-3 flex flex-col gap-2">
 			<div
@@ -197,12 +188,6 @@ export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
 						))}
 					</div>	
 				)}
-				{files.length > 0 && (
-					<div className="mt-4">
-						<h3 className="text-lg font-semibold mb-2">Selected Files:</h3>
-						
-					</div>
-				)}
 			</div>
 			<div className="w-full flex flex-col justify-center items-center gap-2">
 				<Button
@@ -231,10 +216,10 @@ function FileGroup({ files, wasError, group, removeFile }: { files: FileWithPath
 			<div className="flex flex-row justify-between gap-2 w-full h-full items-center">
 				<div className="flex items-center p-4">
 					<Folder className="h-5 w-5 mr-2 text-zinc-500" />
-					<span className="text-lg truncate">{group}</span>
+					<span className="text-lg truncate">{group.replace('./files', '')}</span>
 				</div>
-				<div>{files.length}</div>
-				<Button variant="ghost" size="icon" onClick={() => setOpen(!open)}>
+				<Button variant="ghost" size="icon" onClick={() => setOpen(!open)} className="px-1">
+					<div>{files.length}</div>
 					<ChevronDown className={`w-4 h-4 ${open ? 'rotate-180' : ''}`} />
 				</Button>
 			</div>
