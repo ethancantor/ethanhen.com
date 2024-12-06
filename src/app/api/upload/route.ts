@@ -1,6 +1,7 @@
 import { authOptions } from "@/utils/authOptions";
 import { createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from "fs";
 import { getServerSession } from "next-auth";
+import { revalidatePath } from "next/cache";
 
 const CHUNK_DIR = './chunks';
 
@@ -22,6 +23,8 @@ export async function POST(request: Request){
     writeFileSync(`${CHUNK_DIR}/${fileName}.${currentChunk}`, buff);
     const allFiles = readdirSync(`${CHUNK_DIR}`).filter(file => file.startsWith(`${fileName}.`));
     if(allFiles.length == parseInt(totalChunk)) await chunkAssembler(fileName, folder, parseInt(totalChunk));
+
+    revalidatePath('/');
 
     return new Response('OK', { status: 200 });
 }

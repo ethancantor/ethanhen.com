@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import Image from 'next/image'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { imgListType } from '@/app/gallery/page'
 import { DialogDescription, DialogTitle } from './dialog'
@@ -9,6 +8,8 @@ import { Button } from './ui/button'
 import { ChevronLeft, ChevronRight, LinkIcon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import Image from 'next/image'
+import GalleryPicture from './gallery-picture'
 
 function Gallery({images, image }: { images: imgListType[], image?: number }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(image || null)
@@ -71,13 +72,9 @@ function Gallery({images, image }: { images: imgListType[], image?: number }) {
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {images.filter((image) => image.category === category).map((image) => (
-                  <div key={image.id} className="cursor-pointer hover:opacity-80 transition-opacity" onClick={() => handleImageClick(images.indexOf(image))}>
-                    <Image
-                      src={image.src}
-                      alt={image.alt}
-                      className="rounded-lg object-cover w-full h-full aspect-square"
-                    />
-                  </div>
+                  // <Suspense key={image.id} fallback={<div/>}>
+                    <GalleryPicture key={image.id} image={image} images={images} onClick={handleImageClick} />
+                  // </Suspense>
                 ))}
               </div>
             </section>
