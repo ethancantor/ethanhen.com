@@ -10,9 +10,6 @@ export const GalleryImage = memo(function GalleryImage({ image, quality = 100, f
     const { data: image_data, error: image_error, isLoading: image_loading } = useSWR(`/api/images?image=${image.name}&folder=${image.folder}&quality=${quality}`, (url) => fetch(url).then((res) => res.blob()))
     const { data: meta_data, error: meta_error, isLoading: meta_loading} = useSWR(`/api/image-data?image=${image.name}&folder=${image.folder}`, (url) => fetch(url).then((res) => res.json()))
     
-    console.log('render image', image.name);
-
-
     if(image_loading || meta_loading) return <div className='w-full h-full flex items-center justify-center' >
         <Loader className='animate-spin'/>
     </div>

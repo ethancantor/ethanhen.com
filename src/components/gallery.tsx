@@ -50,10 +50,10 @@ function Gallery({image }: { image?: number }) {
   const handleImageClick = useCallback((index: number | null) => {
     setSelectedImageIndex(index);
     if(index !== null) {
-      router.replace(`${pathname}?image=${index}`);
+      router.replace(`${pathname}?image=${index}`, { scroll: false });
       setLastMoved(0);
     } else {
-      router.replace(`${pathname}`);
+      router.replace(`${pathname}`, { scroll: false });
     }
   }, [pathname, router])
 

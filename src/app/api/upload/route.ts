@@ -43,10 +43,12 @@ async function chunkAssembler(fileName: string, folder: string, totalChunks: num
         }
     }
 
-    if(folder.startsWith('files/gallery')) {
+    console.log(folder)
+
+    if(folder.startsWith('files/gallery') || folder.startsWith('./files/gallery')){ 
         const data = Buffer.concat(chunks);
         try {
-            db.prepare('INSERT INTO images(name, folder, data) VALUES (?,?,?)').run(fileName, folder.replace('files/gallery', ''), data);
+            db.prepare('INSERT INTO images(name, folder, data) VALUES (?,?,?)').run(fileName, folder.replace('files/gallery/', ''), data);
         } catch(err){
             console.log(err);
         }
