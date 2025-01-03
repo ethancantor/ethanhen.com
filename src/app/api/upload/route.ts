@@ -1,4 +1,5 @@
 import { authOptions } from "@/utils/authOptions";
+import { db } from "@/utils/sqlite";
 import { createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from "fs";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
@@ -31,17 +32,32 @@ export async function POST(request: Request){
 
 async function chunkAssembler(fileName: string, folder: string, totalChunks: number){ 
     existsSync(`${folder}`) || mkdirSync(`${folder}`, { recursive: true });
-    const writer = createWriteStream(`${folder}/${fileName}`);
+    const chunks = [];
     for(let i = 1; i <= totalChunks; i++){
         try {
             const chunk = readFileSync(`${CHUNK_DIR}/${fileName}.${i}`);
-            writer.write(chunk);
+            chunks.push(chunk);
             unlinkSync(`${CHUNK_DIR}/${fileName}.${i}`);
         } catch(err){
             console.log(err);
         }
     }
-    writer.close();
+
+    if(folder.startsWith('files/gallery')) {
+        const data = Buffer.concat(chunks);
+        try {
+            db.prepare('INSERT INTO images(name, folder, data) VALUES (?,?,?)').run(fileName, folder.replace('files/gallery', ''), data);
+        } catch(err){
+            console.log(err);
+        }
+    } else {
+        const writer = createWriteStream(`${folder}/${fileName}`);
+        for(const chunk of chunks){
+            writer.write(chunk);
+        }
+        writer.close();
+
+    }
 }
 
 export async function GET(request: Request){

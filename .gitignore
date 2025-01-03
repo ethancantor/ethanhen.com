@@ -40,3 +40,4 @@ credentials.json
 /files/*
 /gallery/*
 /chunks/*
+db.sqlite

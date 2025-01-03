@@ -1,20 +1,34 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { imgListType } from '@/app/gallery/page'
-import { DialogDescription, DialogTitle } from './dialog'
-import { Button } from './ui/button' 
 import { ChevronLeft, ChevronRight, LinkIcon } from 'lucide-react'
-import { usePathname, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import Image from 'next/image'
-import GalleryPicture from './gallery-picture'
+import { usePathname, useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
+import useSWR from 'swr'
+import { DialogDescription, DialogTitle } from './dialog'
+import { GalleryImage } from './gallery-image'
+import { Button } from './ui/button'
 
-function Gallery({images, image }: { images: imgListType[], image?: number }) {
+export interface image_type {
+  name: string
+  folder: string
+}
+
+function Gallery({image }: { image?: number }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(image || null)
   const router = useRouter();
   const pathname = usePathname();
+
+  const { data, error, isLoading } = useSWR('/api/gallery', (url) => fetch(url).then((res) => res.json()))
+
+  const [images, setImages] = useState<image_type[]>([]);
+
+  useEffect(() => {
+    if(!error && !isLoading && data && data.length > 0) {
+      setImages(data);
+    }
+  }, [data, error, isLoading])
 
   const [lastMoved, setLastMoved] = useState(0);
 
@@ -28,8 +42,8 @@ function Gallery({images, image }: { images: imgListType[], image?: number }) {
     return () => clearInterval(interval);
   }, [lastMoved, setLastMoved]);
 
-  const categories = images.reduce((acc, image) => {
-    if (!acc.includes(image.category)) acc.push(image.category)
+  const categories = images.reduce((acc: string[], image: image_type ) => {
+    if (!acc.includes(image.folder)) acc.push(image.folder)
     return acc
   }, [] as string[])
 
@@ -60,6 +74,8 @@ function Gallery({images, image }: { images: imgListType[], image?: number }) {
     else if (event.key === 'ArrowRight') handleNext()
   }, [handlePrevious, handleNext])
 
+  if(isLoading) return <div className="text-2xl w-full h-full flex items-center justify-center">Loading...</div>
+
   return (
     <div>
       <div className="">
@@ -71,10 +87,10 @@ function Gallery({images, image }: { images: imgListType[], image?: number }) {
                 <CopyButton category={category} />
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {images.filter((image) => image.category === category).map((image) => (
-                  // <Suspense key={image.id} fallback={<div/>}>
-                    <GalleryPicture key={image.id} image={image} images={images} onClick={handleImageClick} />
-                  // </Suspense>
+                {images.filter((image) => image.folder === category).map((image) => (
+                  <button className='w-fit h-fit' key={image.name + " " + image.folder} onClick={() => handleImageClick(images.indexOf(image))}>
+                    <GalleryImage image={image} quality={10} />
+                  </button>
                 ))}
               </div>
             </section>
@@ -87,13 +103,7 @@ function Gallery({images, image }: { images: imgListType[], image?: number }) {
           <DialogDescription />
           {selectedImageIndex !== null && images[selectedImageIndex] && (
             <div className="absolute w-full h-full">
-              <Image
-                src={images[selectedImageIndex].src}
-                alt={images[selectedImageIndex].alt}
-                className='w-full h-full object-contain'
-                fill
-                unoptimized
-              />
+                <GalleryImage image={images[selectedImageIndex]} quality={100} fill />
               <div className='absolute left-0 top-0 translate translate-y-[4rem] w-[15%] lg:w-[5%] h-[calc(100%-8rem)] cursor-pointer'
                 onClick={handlePrevious}  >
                 <ChevronLeft className={`h-full w-full text-white ${lastMoved < MAX_ARROW_TIMEOUT ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`} />

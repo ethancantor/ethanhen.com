@@ -7,10 +7,9 @@ export async function GET(request: NextRequest){
     const { searchParams } = new URL(request.url);
     const imageName = searchParams.get('image');
     const imageFolder = searchParams.get('folder');
-    const quality = parseInt(searchParams.get('quality') || '100');
 
     const data = db.prepare('SELECT * FROM images WHERE name = ? and folder = ?').get(imageName, imageFolder) as { name: string, folder: string, data: Buffer };
+    const metadata = await sharp(data.data).metadata();
 
-    const buff = await sharp(data.data).jpeg({ quality }).toBuffer()
-    return new Response(buff, { status: 200 });
+    return new Response(JSON.stringify(metadata), { status: 200 });
 } 
