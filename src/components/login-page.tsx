@@ -1,59 +1,57 @@
 'use client'
 
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { LockIcon } from 'lucide-react'
+import React, { useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 import { signIn } from 'next-auth/react'
 
 export default function LoginPage({ error }: { error?: string }) {
-  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Here you would typically handle the login logic
-    console.log('Login attempted with password:', password)
-    // Reset the password field after submission
-    signIn('credentials', { password, callbackUrl: '/' });
-    setPassword('')
+  function togglePasswordVisibility(){
+    setShowPassword(!showPassword);
+  }
+
+  async function handleFormSubmit(e: FormData) {
+    const password = e.get('password');
+    await signIn('credentials', { password, callbackUrl: '/'})
   }
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <Card className={`w-full max-w-md bg-zinc-900 ${ error ? 'border-red-400' : 'border-zinc-800'}`}>
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center text-zinc-100">Hey Ethan, sign in</CardTitle>
-          {error && <CardDescription className='text-center text-red-400'> did you really forget your password already...</CardDescription>}
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="password" className="sr-only">
-                Password
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 bg-zinc-800 text-zinc-100 placeholder-zinc-400 items-center flex"
-                  required
-                />
-                <LockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400" size={18} />
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full bg-zinc-800 hover:bg-zinc-600 text-zinc-100">
-              Sign In
-            </Button>
-          </CardFooter>
+      <div className={`w-full h-full max-w-md ${error ? 'border border-red-400' : ''} rounded-lg px-2 py-2 flex flex-col gap-4`}>
+        <div className={``}>
+          <h1 className={`text-zinc-100 text-2xl font-bold`}>Hey Ethan, Sign in!</h1>
+          {error && <h2 className={'text-red-400 text-base'}>did you really forget your password already...</h2>}
+        </div>
+        <form action={handleFormSubmit} className={`flex flex-col gap-2 items-center`}>
+          <div className={'flex flex-col w-full relative'}>
+            <input id={'password'}
+                   name={'password'}
+                   type={showPassword ? 'text' : 'password'}
+                   placeholder={'password'}
+                   className={'text-zinc-200 placeholder:text-zinc-400 px-3 py-1 rounded-lg bg-zinc-800 ' +
+                       'focus:ring-0 focus:outline-0 focus:border-0 hover:bg-zinc-700 items-center text-start flex'}
+                   required
+            />
+            <button className={`absolute right-0 top-0 h-full px-3 py-2`}
+                    onClick={togglePasswordVisibility}
+                    type={'button'}
+            >
+              {showPassword ? (
+                  <EyeOff className="h-4 w-4 text-zinc-400"/>
+              ) : (
+                  <Eye className="h-4 w-4 text-zinc-400"/>
+              )}
+            </button>
+          </div>
+          <button
+              className={`text-zinc-200 hover:text-zinc-100 bg-zinc-800 rounded-lg w-fit px-4 py-1 hover:bg-zinc-700`}
+              type={'submit'}
+          >
+            Sign In
+          </button>
         </form>
-      </Card>
+      </div>
     </div>
   )
 }
