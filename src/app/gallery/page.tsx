@@ -2,7 +2,6 @@ import Gallery from "@/components/gallery";
 import fs from "fs";
 import { Suspense } from "react";
 
-export type imgListType = { id: number, src: string, alt: string, category: string, stats: fs.Stats }
 export const dynamic = "force-dynamic";
 
 type SearchParams = {

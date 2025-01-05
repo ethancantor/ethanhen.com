@@ -9,11 +9,7 @@ import useSWR from 'swr'
 import { DialogDescription, DialogTitle } from './dialog'
 import { GalleryImage } from './gallery-image'
 import { Button } from './ui/button'
-
-export interface image_type {
-  name: string
-  folder: string
-}
+import { File } from "@/types/db_types";
 
 function Gallery({image }: { image?: number }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(image || null)
@@ -22,7 +18,9 @@ function Gallery({image }: { image?: number }) {
 
   const { data, error, isLoading } = useSWR('/api/gallery', (url) => fetch(url).then((res) => res.json()))
 
-  const [images, setImages] = useState<image_type[]>([]);
+  console.log(data);
+
+  const [images, setImages] = useState<File[]>([]);
 
   useEffect(() => {
     if(!error && !isLoading && data && data.length > 0) {
@@ -42,8 +40,9 @@ function Gallery({image }: { image?: number }) {
     return () => clearInterval(interval);
   }, [lastMoved, setLastMoved]);
 
-  const categories = images.reduce((acc: string[], image: image_type ) => {
-    if (!acc.includes(image.folder)) acc.push(image.folder)
+  const categories = images.reduce((acc: string[], image: File ) => {
+    const folder_name = image.path.split('/')[0];
+    if(!acc.includes(folder_name)) acc.push(folder_name);
     return acc
   }, [] as string[])
 
@@ -87,9 +86,9 @@ function Gallery({image }: { image?: number }) {
                 <CopyButton category={category} />
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {images.filter((image) => image.folder === category).map((image) => (
-                  <button className='w-fit h-fit' key={image.name + " " + image.folder} onClick={() => handleImageClick(images.indexOf(image))}>
-                    <GalleryImage image={image} quality={10} />
+                {images.filter((image) => image.path.startsWith(category)).map((image) => (
+                  <button className='w-fit h-fit' key={image.path} onClick={() => handleImageClick(images.indexOf(image))}>
+                    <GalleryImage image={image} quality={50} />
                   </button>
                 ))}
               </div>

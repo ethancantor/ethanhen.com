@@ -2,15 +2,17 @@
 import { db } from "@/utils/sqlite";
 import { NextRequest } from "next/server";
 import sharp from 'sharp';
+import { File } from '@/types/db_types';
 
 export async function GET(request: NextRequest){
     const { searchParams } = new URL(request.url);
     const imageName = searchParams.get('image');
-    const imageFolder = searchParams.get('folder');
     const quality = parseInt(searchParams.get('quality') || '100');
 
-    const data = db.prepare('SELECT * FROM images WHERE name = ? and folder = ?').get(imageName, imageFolder) as { name: string, folder: string, data: Buffer };
+    const data = db.prepare("SELECT * FROM files WHERE path = ? and type='image'").get(imageName) as File | null | undefined;
 
-    const buff = await sharp(data.data).jpeg({ quality }).toBuffer()
+    if(!data) return new Response('', { status: 404 });
+
+    const buff = await sharp(data.data as Buffer).jpeg({ quality }).toBuffer()
     return new Response(buff, { status: 200 });
 } 

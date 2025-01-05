@@ -42,23 +42,14 @@ async function chunkAssembler(fileName: string, folder: string, totalChunks: num
             console.log(err);
         }
     }
-
-    console.log(folder)
-
-    if(folder.startsWith('files/gallery') || folder.startsWith('./files/gallery')){ 
-        const data = Buffer.concat(chunks);
-        try {
-            db.prepare('INSERT INTO images(name, folder, data) VALUES (?,?,?)').run(fileName, folder.replace('files/gallery/', ''), data);
-        } catch(err){
-            console.log(err);
-        }
-    } else {
-        const writer = createWriteStream(`${folder}/${fileName}`);
-        for(const chunk of chunks){
-            writer.write(chunk);
-        }
-        writer.close();
-
+    const data = Buffer.concat(chunks);
+    const isImage = fileName.endsWith('png') || fileName.endsWith('jpg') || fileName.endsWith('gif') || fileName.endsWith('jpeg') || fileName.endsWith('webp')
+    const type = isImage ? 'image' : 'file';
+    try {
+        console.log('uploading file', `${folder}/${fileName}`);
+        db.prepare('INSERT INTO files(path, data, type) VALUES (?,?,?)').run(`${folder}/${fileName}`, data, type);
+    } catch(err){
+        console.log(err);
     }
 }
 
