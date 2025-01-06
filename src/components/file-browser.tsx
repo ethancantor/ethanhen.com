@@ -3,21 +3,16 @@
 import { useState } from "react";
 import { FileIcon, FolderIcon, ChevronDown, ChevronUp, FileText, FileAudio, FileVideo, FileType, FileImage, FileCog, FileCode, Edit, FileX, FolderX, ShieldQuestionIcon, LoaderIcon, Download, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { File } from "@/app/files/page";
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from "./dialog";
 import { createSubFolder, deleteFile, deleteFolder, renamePath } from "@/actions/file-editing";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-interface FileBrowserProps {
-	files: File[];
-}
-
-export default function FileBrowser({ files }: FileBrowserProps) {
+export default function FileBrowser({ files }: { files: string[]}) {
 	return (
 		<div className="space-y-2">
 			{files.map((file, index) => (
-				<FileItem key={index} file={file} level={0} />
+				<div key={index}>{file}</div>
 			))}
 		</div>
 	);

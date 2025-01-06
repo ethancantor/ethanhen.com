@@ -1,5 +1,4 @@
 import Gallery from "@/components/gallery";
-import fs from "fs";
 import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";

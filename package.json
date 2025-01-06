@@ -21,6 +21,7 @@
     "better-sqlite3": "^11.7.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "file-paths-to-tree": "^4.0.0",
     "framer-motion": "^11.5.4",
     "fs": "^0.0.1-security",
     "lucide-react": "^0.441.0",

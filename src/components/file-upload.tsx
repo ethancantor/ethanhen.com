@@ -5,23 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Upload, File, X, LoaderIcon, Folder, ChevronDown } from "lucide-react";
 import FolderSelection from "./folder-selection";
-
-interface FolderType {
-    id: string
-    name: string
-    subfolders?: FolderType[]
-	parentPath?: string
-}
+import { Node } from "file-paths-to-tree";
 
 interface FileWithPath extends File {
 	path?: string
 }
 
 
-export function FileUploadComponent({ folders }: { folders: FolderType[] }) {
+export function FileUploadComponent({ folders }: { folders: Node[] }) {
 	const [files, setFiles] = useState<FileWithPath[]>([]);
 	const [dragActive, setDragActive] = useState(false);
-	const [folder, setFolder] = useState("./files");
+	const [folder, setFolder] = useState("");
 	const [uploading, setUploading] = useState(false);
 	const [wasError, setWasError] = useState(false);
 
@@ -216,7 +210,7 @@ function FileGroup({ files, wasError, group, removeFile }: { files: FileWithPath
 			<div className="flex flex-row justify-between gap-2 w-full h-full items-center">
 				<div className="flex items-center p-4">
 					<Folder className="h-5 w-5 mr-2 text-zinc-500" />
-					<span className="text-lg truncate">{group.replace('./files', '')}</span>
+					<span className="text-lg truncate">{group}</span>
 				</div>
 				<Button variant="ghost" size="icon" onClick={() => setOpen(!open)} className="px-1">
 					<div>{files.length}</div>

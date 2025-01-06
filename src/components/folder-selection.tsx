@@ -21,67 +21,62 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
+import { Node } from 'file-paths-to-tree'
 
-interface FolderType {
-  id: string
-  name: string
-  subfolders?: FolderType[]
-  parentPath?: string
-}
 
-export default function FolderSelection({ folderState, initFolders }: { folderState: [string, Dispatch<SetStateAction<string>>], initFolders: FolderType[] }) {
+export default function FolderSelection({ folderState, initFolders }: { folderState: [string, Dispatch<SetStateAction<string>>], initFolders: Node[] }) {
   
-  const [folders, setFolders] = useState<FolderType[]>(initFolders)
+  const [folders, setFolders] = useState<Node[]>(initFolders)
   const [, setSelectedFolder] = folderState
   const [selectedFolderID, setSelectedFolderID] = useState<string | null>(null)
   const [newFolderName, setNewFolderName] = useState('')
-  const [parentFolderId, setParentFolderId] = useState<string | null>(null)
+  const [parentFolder, setParentFolder] = useState<Node | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
 
   const handleCreateFolder = () => {
     if (newFolderName.trim()) {
-      const newFolder: FolderType = {
-        id: Date.now().toString(),
+      const newFolder: Node = {
         name: newFolderName.trim(),
-        parentPath: `./files/gallery`
+        path: `${parentFolder?.path || 'root'}/${newFolderName.trim()}`,
+        children: [],
+        parent: parentFolder
       }
 
       setFolders((prevFolders) => {
-        if (parentFolderId === null || parentFolderId === 'root') {
+        if (parentFolder === null || parentFolder.path === 'root') {
           return [...prevFolders, newFolder]
         }
 
-        const updateFolders = (folders: FolderType[]): FolderType[] => {
+        const updateFolders = (folders: Node[]): Node[] => {
           return folders.map((folder) => {
-            if (folder.id === parentFolderId) {
-              const newFolder: FolderType = {
-                id: Date.now().toString(),
+            if (folder === parentFolder) {
+              const newFolder: Node = {
                 name: newFolderName.trim(),
-                parentPath: `${folder.parentPath}/${folder.name}`
+                path: `${parentFolder?.path || 'root'}/${newFolderName.trim()}`,
+                children: [],
+                parent: parentFolder
               }
               return {
                 ...folder,
-                subfolders: [...(folder.subfolders || []), newFolder]
+                children: [...(folder.children || []), newFolder]
               }
             }
-            if (folder.subfolders) {
+            if (folder.children) {
               return {
                 ...folder,
-                subfolders: updateFolders(folder.subfolders),
+                children: updateFolders(folder.children),
               }
             }
             return folder
           })
         }
 
-        console.log(prevFolders);
-
         return updateFolders(prevFolders)
       })
 
       setNewFolderName('')
-      setParentFolderId(null)
+      setParentFolder(null)
       setIsDialogOpen(false)
     }
   }
@@ -98,19 +93,19 @@ export default function FolderSelection({ folderState, initFolders }: { folderSt
     })
   }
 
-  const renderFolder = (folder: FolderType, depth = 0) => {
-    const isExpanded = expandedFolders.has(folder.id)
-    const hasSubfolders = folder.subfolders && folder.subfolders.length > 0
+  const renderFolder = (folder: Node, depth = 0) => {
+    const isExpanded = expandedFolders.has(folder.path)
+    const hasSubfolders = folder.children && folder.children.length > 0
 
     return (
-      <div key={folder.id} className={cn("space-y-1", depth > 0 && "ml-4")}>
+      <div key={folder.path} className={cn("space-y-1", depth > 0 && "ml-4")}>
         <div className="flex items-center space-x-2">
           {hasSubfolders && (
             <Button
               variant="ghost"
               size="sm"
               className="p-0 h-6 w-6"
-              onClick={() => toggleFolder(folder.id)}
+              onClick={() => toggleFolder(folder.path)}
             >
               <ChevronRight
                 className={cn(
@@ -121,9 +116,9 @@ export default function FolderSelection({ folderState, initFolders }: { folderSt
             </Button>
           )}
           {!hasSubfolders && <div className="w-6" />}
-          <RadioGroupItem value={folder.id} id={folder.id} />
+          <RadioGroupItem value={folder.path} id={folder.path} />
           <Label
-            htmlFor={folder.id}
+            htmlFor={folder.path}
             className="flex items-center cursor-pointer text-sm"
           >
             <Folder className="mr-2 h-4 w-4" />
@@ -132,8 +127,8 @@ export default function FolderSelection({ folderState, initFolders }: { folderSt
         </div>
         {isExpanded && hasSubfolders && (
           <div className="mt-1">
-            {folder.subfolders!.map((subfolder) =>
-              renderFolder(subfolder, depth + 1)
+            {folder.children!.filter(child => child.children.length > 0).map((children) =>
+              renderFolder(children, depth + 1)
             )}
           </div>
         )}
@@ -141,25 +136,26 @@ export default function FolderSelection({ folderState, initFolders }: { folderSt
     )
   }
 
-  const flattenFolders = (folders: FolderType[]): FolderType[] => {
+  const flattenFolders = (folders: Node[]): Node[] => {
     return folders.reduce((acc, folder) => {
-      acc.push(folder)
-      if (folder.subfolders) {
-        acc.push(...flattenFolders(folder.subfolders))
+      const shouldContinue = !folder.path.split('/')[folder.path.split('/').length - 1].includes('.') || folder.path === '.'
+      if (folder.children && shouldContinue) {
+        acc.push(folder)
+        acc.push(...flattenFolders(folder.children))
       }
       return acc
-    }, [] as FolderType[])
+    }, [] as Node[])
   }
 
   const setFolder = (folderId: string) => {
     let foundFolder = null;
     let folderLayer = folders;
     while(!foundFolder && folderLayer.length > 0) {
-      foundFolder = folderLayer.find((folder) => folder.id === folderId);
-      folderLayer = folderLayer.flatMap((folder) => folder.subfolders || []);
+      foundFolder = folderLayer.find((folder) => folder.path === folderId);
+      folderLayer = folderLayer.flatMap((folder) => folder.children || []);
     }
 
-    setSelectedFolder(foundFolder ? `${foundFolder.parentPath}/${foundFolder.name}` : '');
+    setSelectedFolder(foundFolder ? `${foundFolder.parent?.path}/${foundFolder.name}` : '');
     setSelectedFolderID(folderId);
   }
 
@@ -168,7 +164,6 @@ export default function FolderSelection({ folderState, initFolders }: { folderSt
       <RadioGroup value={selectedFolderID || ''} onValueChange={setFolder} className='bg-zinc-900 rounded-lg px-2 py-1'>
         {folders.map((folder) => renderFolder(folder))}
       </RadioGroup>
-
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
           <Button variant="ghost" className="w-full hover:bg-zinc-900">
@@ -193,16 +188,15 @@ export default function FolderSelection({ folderState, initFolders }: { folderSt
             <div className="space-y-2">
               <Label htmlFor="parentFolder">Parent Folder (Optional)</Label>
               <Select 
-                value={parentFolderId || 'root'} 
-                onValueChange={(value) => setParentFolderId(value === 'root' ? null : value)}
+                value={parentFolder?.path || 'root'} 
+                onValueChange={(value) => setParentFolder(value === 'root' ? null : flattenFolders(folders).find((folder) => folder.path === value) || null)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a parent folder" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="root">Root</SelectItem>
                   {flattenFolders(folders).map((folder) => (
-                    <SelectItem key={folder.id} value={folder.id}>
+                    <SelectItem key={folder.path} value={folder.path}>
                       {folder.name}
                     </SelectItem>
                   ))}

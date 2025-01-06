@@ -19,7 +19,7 @@ export const GalleryImage = memo(function GalleryImage({ image, quality = 100, f
         return (
             <div className='w-full h-full'>
                 { fill ? <Image src={url} alt={image.path} className='w-full h-full object-contain' fill /> :
-                <Image src={url} alt={image.path} width={meta_data.width} height={meta_data.height} className='w-fit h-fit object-cover' /> }
+                <Image src={url} alt={image.path} width={meta_data.width || 0} height={meta_data.height || 0} className='w-fit h-fit object-cover' /> }
             </div>
         )
     }

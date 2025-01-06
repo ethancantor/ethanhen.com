@@ -41,3 +41,5 @@ credentials.json
 /gallery/*
 /chunks/*
 db.sqlite
+identifier.sqlite
+.idea/

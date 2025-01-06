@@ -4,3 +4,9 @@ export type File = {
     type: 'file' | 'image'
     data: unknown;
 }
+
+export type Folder = {
+    path: string;
+    parent?: Folder;
+    children?: Folder[];
+}

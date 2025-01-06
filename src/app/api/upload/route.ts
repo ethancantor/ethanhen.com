@@ -1,6 +1,6 @@
 import { authOptions } from "@/utils/authOptions";
 import { db } from "@/utils/sqlite";
-import { createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from "fs";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 
