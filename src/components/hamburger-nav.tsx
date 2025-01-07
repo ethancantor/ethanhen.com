@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { HamburgerMenuIcon } from "@radix-ui/react-icons";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 export default function HamburgerNav() {
 
@@ -27,8 +27,7 @@ export default function HamburgerNav() {
 
     const navItems = [
         { label: 'home', href: '/' },
-        { label: 'gallery', href: '/gallery' },
-        { label: 'files', href: '/files' },
+        { label: 'gallery', href: '/gallery' }
     ];
 
     if(session) navItems.push({ label: 'file upload', href: '/fileupload' });

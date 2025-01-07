@@ -1,6 +1,5 @@
 
-import { DB_FILE } from '@/types/db_types';
-import { db } from "@/utils/sqlite";
+import { db, GALLERY_IMAGE } from "@/utils/sqlite";
 import { NextRequest } from "next/server";
 import sharp from 'sharp';
 
@@ -9,7 +8,7 @@ export async function GET(request: NextRequest){
     const imageName = searchParams.get('image');
     const quality = parseInt(searchParams.get('quality') || '100');
 
-    const data = db.prepare("SELECT * FROM files WHERE path = ? and is_gallery_image='true'").get(imageName) as DB_FILE | null | undefined;
+    const data = db.prepare("SELECT * FROM gallery_images WHERE path = ?").get(imageName) as GALLERY_IMAGE | null | undefined;
 
     if(!data) return new Response('', { status: 404 });
 

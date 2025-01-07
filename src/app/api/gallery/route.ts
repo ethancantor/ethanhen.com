@@ -1,6 +1,7 @@
-import { db } from "@/utils/sqlite";
+import { db, GALLERY_IMAGE } from "@/utils/sqlite";
 
 export async function GET(){
-    const data = db.prepare("SELECT path FROM files where is_gallery_image='true'").all() as { name: string, folder: string }[];
-    return new Response(JSON.stringify(data), { status: 200 });
+    const data = db.prepare("SELECT * FROM gallery_images").all() as GALLERY_IMAGE[];
+
+    return new Response(JSON.stringify(data.map(d => d.path)), { status: 200 });
 }

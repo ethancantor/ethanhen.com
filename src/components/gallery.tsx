@@ -1,7 +1,6 @@
 'use client'
 
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { DB_FILE } from "@/types/db_types"
 import { ChevronLeft, ChevronRight, LinkIcon } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { usePathname, useRouter } from 'next/navigation'
@@ -17,10 +16,8 @@ function Gallery({image }: { image?: number }) {
   const pathname = usePathname();
 
   const { data, error, isLoading } = useSWR('/api/gallery', (url) => fetch(url).then((res) => res.json()))
-
-  console.log(data);
-
-  const [images, setImages] = useState<DB_FILE[]>([]);
+  
+  const [images, setImages] = useState<string[]>([]);
 
   useEffect(() => {
     if(!error && !isLoading && data && data.length > 0) {
@@ -40,8 +37,8 @@ function Gallery({image }: { image?: number }) {
     return () => clearInterval(interval);
   }, [lastMoved, setLastMoved]);
 
-  const categories = images.reduce((acc: string[], image: DB_FILE ) => {
-    const folder_name = image.path.split('/')[0];
+  const categories = images.reduce((acc: string[], image: string ) => {
+    const folder_name = image.split('/')[1] || '';
     if(!acc.includes(folder_name)) acc.push(folder_name);
     return acc
   }, [] as string[])
@@ -86,7 +83,7 @@ function Gallery({image }: { image?: number }) {
                 <CopyButton category={category} />
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {images.filter((image) => image.path.startsWith(category)).map((image, idx) => (
+                {images.filter((image) => image.startsWith('/' + category)).map((image, idx) => (
                   <button className='w-fit h-fit' key={idx} onClick={() => handleImageClick(images.indexOf(image))}>
                     <GalleryImage image={image} quality={50} />
                   </button>

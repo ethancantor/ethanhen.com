@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Upload, File, X, LoaderIcon, Folder, ChevronDown } from "lucide-react";
-import FolderSelection from "./folder-selection";
+import { Input } from "@/components/ui/input";
 import { Node } from "file-paths-to-tree";
+import { File, Folder, LoaderIcon, Upload, X } from "lucide-react";
+import React, { useCallback, useState } from "react";
+import FolderSelection from "./folder-selection";
 
 interface FileWithPath extends File {
 	path?: string
@@ -108,10 +108,11 @@ export function FileUploadComponent({ folders }: { folders: Node[] }) {
 			let currentChunk = 1;
 			const totalChunks = Math.ceil(file.size / CHUNKSIZE);
 			const responseList = [];
+			console.log(totalChunks);
 			while(start < file.size){
 				const chunk = file.slice(start, start + CHUNKSIZE);
 				start += CHUNKSIZE;
-				const response = await sendChunk(chunk, file.name, currentChunk, totalChunks, file.path || folder);
+				const response = await sendChunk(chunk, `${file.path || folder}/${file.name}`, currentChunk, totalChunks);
 				responseList.push(response);
 				currentChunk++;
 			}
@@ -120,10 +121,9 @@ export function FileUploadComponent({ folders }: { folders: Node[] }) {
 			return wasError;
 		}
 
-		async function sendChunk(chunk: Blob, fileName: string, currentChunk: number, totalChunks: number, path: string) {
+		async function sendChunk(chunk: Blob, path: string, currentChunk: number, totalChunks: number,) {
 			const formData = new FormData();
-			formData.append("name", fileName);
-			formData.append("folder", `${path}`);
+			formData.append("name", path);
 			formData.append("file", chunk);
 			formData.append('totalChunk', totalChunks.toString());
 			formData.append('currentChunk', currentChunk.toString());
@@ -201,45 +201,35 @@ export function FileUploadComponent({ folders }: { folders: Node[] }) {
 
 function FileGroup({ files, wasError, group, removeFile }: { files: FileWithPath[], wasError: boolean, group: string, removeFile: (file: FileWithPath) => void }) {
 
-	const [open, setOpen] = useState(false);
-
 	return (
 		<div
 			className={`flex items-start flex-col gap-3 bg-zinc-900 p-2 rounded-lg`}
 		>
-			<div className="flex flex-row justify-between gap-2 w-full h-full items-center">
-				<div className="flex items-center p-4">
-					<Folder className="h-5 w-5 mr-2 text-zinc-500" />
-					<span className="text-lg truncate">{group}</span>
-				</div>
-				<Button variant="ghost" size="icon" onClick={() => setOpen(!open)} className="px-1">
-					<div>{files.length}</div>
-					<ChevronDown className={`w-4 h-4 ${open ? 'rotate-180' : ''}`} />
-				</Button>
+			<div className="flex items-center p-4">
+				<Folder className="h-5 w-5 mr-2 text-zinc-500" />
+				<span className="text-lg truncate">{group}</span>
 			</div>
-			{open &&
-				<ul className="space-y-2 w-full">
-					{files.map((file, index) => (
-					<li
-						key={index}
-						className={`flex items-center justify-between even:bg-zinc-800 odd:bg-zinc-700 w-full p-2 rounded-2xl ${wasError && 'outline outline-1 outline-red-500'}`}
+			<ul className="space-y-2 w-full">
+				{files.map((file, index) => (
+				<li
+					key={index}
+					className={`flex items-center justify-between even:bg-zinc-800 odd:bg-zinc-700 w-full p-2 rounded-2xl ${wasError && 'outline outline-1 outline-red-500'}`}
+				>
+					<div className="flex items-center">
+						<File className="h-5 w-5 mr-2 text-zinc-500" />
+						<span className="text-sm truncate">{file.name}</span>
+					</div>
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={() => removeFile(file)}
+						aria-label={`Remove ${file.name}`}
 					>
-						<div className="flex items-center">
-							<File className="h-5 w-5 mr-2 text-zinc-500" />
-							<span className="text-sm truncate">{file.name}</span>
-						</div>
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={() => removeFile(file)}
-							aria-label={`Remove ${file.name}`}
-						>
-							<X className="h-4 w-4" />
-						</Button>
-					</li>
-					))}
-				</ul>
-			}
+						<X className="h-4 w-4" />
+					</Button>
+				</li>
+				))}
+			</ul>
 		</div>
 	) 
 }
