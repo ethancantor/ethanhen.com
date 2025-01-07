@@ -14,13 +14,13 @@ export default async function FileUpload() {
     if(!session) redirect('/api/auth/signin')
 
     const paths = db.prepare("select path from files").all() as { path: string }[];
-    const str_folders = paths.map((file: { path: string }) => file.path)
+    const node_strs = paths.map((file: { path: string }) => file.path.split('./').slice(1).join('.'));
 
-    const folders = filePathsToTree(str_folders);
+    const nodes = filePathsToTree(node_strs);
     
     return (
         <div className="w-screen h-screen py-20 overflow-x-hidden">
-            <FileBrowser files={folders}/>
+            <FileBrowser nodes={nodes}/>
         </div>
     )
 };
