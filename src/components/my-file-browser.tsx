@@ -8,7 +8,7 @@ import useSWR from 'swr';
 
 export const FileBrowser = ({ nodes }: { nodes: Node[] }) => {
     return (
-        <div className=''>
+        <div className='px-1 sm:px-8 md:px-16 lg:px-24 flex flex-col'>
             { nodes.map((node, index) => <NodeRow key={index} node={node} />) }
         </div>
     )
