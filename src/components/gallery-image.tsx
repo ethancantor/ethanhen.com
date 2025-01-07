@@ -1,11 +1,11 @@
 'use client';
-import React, { memo } from 'react'
-import useSWR from 'swr';
-import Image from 'next/image';
+import { DB_FILE } from '@/types/db_types';
 import { Loader } from 'lucide-react';
-import { File } from '@/types/db_types';
+import Image from 'next/image';
+import { memo } from 'react';
+import useSWR from 'swr';
 
-export const GalleryImage = memo(function GalleryImage({ image, quality = 100, fill } : { image: File, quality?: number, fill?: boolean }){
+export const GalleryImage = memo(function GalleryImage({ image, quality = 100, fill } : { image: DB_FILE, quality?: number, fill?: boolean }){
 
     const { data: image_data, error: image_error, isLoading: image_loading } = useSWR(`/api/images?image=${image.path}&quality=${quality}`, (url) => fetch(url).then((res) => res.blob()))
     const { data: meta_data, error: meta_error, isLoading: meta_loading} = useSWR(`/api/image-data?image=${image.path}`, (url) => fetch(url).then((res) => res.json()))

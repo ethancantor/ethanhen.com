@@ -1,6 +1,6 @@
 import { authOptions } from "@/utils/authOptions";
 import { db } from "@/utils/sqlite";
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from "fs";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 
@@ -51,21 +51,4 @@ async function chunkAssembler(fileName: string, folder: string, totalChunks: num
     } catch(err){
         console.log(err);
     }
-}
-
-export async function GET(request: Request){
-    const { searchParams } = new URL(request.url);
-    const path = searchParams.get('path');
-    try {
-        const exists = existsSync(`./files/${path}`);
-        if(!exists) return new Response('Not Found', { status: 404 });
-        const isDir = statSync(`./files/${path}`).isDirectory();
-        let content = null;
-        if(isDir) return new Response('Cannot get directory', { status: 403 });
-        else content = readFileSync(`./files/${path}`);
-
-        return new Response(content, { status: 200 });
-
-    } catch(err){ return new Response('Error', { status: 500 }); }
-
 }

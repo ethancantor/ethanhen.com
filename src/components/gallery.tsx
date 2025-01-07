@@ -1,6 +1,7 @@
 'use client'
 
 import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { DB_FILE } from "@/types/db_types"
 import { ChevronLeft, ChevronRight, LinkIcon } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { usePathname, useRouter } from 'next/navigation'
@@ -9,7 +10,6 @@ import useSWR from 'swr'
 import { DialogDescription, DialogTitle } from './dialog'
 import { GalleryImage } from './gallery-image'
 import { Button } from './ui/button'
-import { File } from "@/types/db_types";
 
 function Gallery({image }: { image?: number }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(image || null)
@@ -20,7 +20,7 @@ function Gallery({image }: { image?: number }) {
 
   console.log(data);
 
-  const [images, setImages] = useState<File[]>([]);
+  const [images, setImages] = useState<DB_FILE[]>([]);
 
   useEffect(() => {
     if(!error && !isLoading && data && data.length > 0) {
@@ -40,7 +40,7 @@ function Gallery({image }: { image?: number }) {
     return () => clearInterval(interval);
   }, [lastMoved, setLastMoved]);
 
-  const categories = images.reduce((acc: string[], image: File ) => {
+  const categories = images.reduce((acc: string[], image: DB_FILE ) => {
     const folder_name = image.path.split('/')[0];
     if(!acc.includes(folder_name)) acc.push(folder_name);
     return acc

@@ -1,8 +1,11 @@
 
-export type File = {
+export type DB_FILE = {
     path: string;
-    type: 'file' | 'image'
     data: unknown;
+    is_gallery_image: boolean;
+    is_private: boolean;
+    created_at: Date;
+    updated_at: Date;
 }
 
 export type Folder = {
