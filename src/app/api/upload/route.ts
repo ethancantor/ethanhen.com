@@ -14,7 +14,6 @@ export async function POST(request: Request){
 
     const blob = formData.get('file') as Blob;
     const fileName = formData.get('name') as string;
-    const folder = formData.get('folder') as string;
     const totalChunk = formData.get('totalChunk') as string;
     const currentChunk = formData.get('currentChunk') as string;
 
@@ -23,15 +22,14 @@ export async function POST(request: Request){
     const buff = Buffer.from(buffer);
     writeFileSync(`${CHUNK_DIR}/${fileName}.${currentChunk}`, buff);
     const allFiles = readdirSync(`${CHUNK_DIR}`).filter(file => file.startsWith(`${fileName}.`));
-    if(allFiles.length == parseInt(totalChunk)) await chunkAssembler(fileName, folder, parseInt(totalChunk));
+    if(allFiles.length == parseInt(totalChunk)) await chunkAssembler(fileName, parseInt(totalChunk));
 
     revalidatePath('/');
 
     return new Response('OK', { status: 200 });
 }
 
-async function chunkAssembler(fileName: string, folder: string, totalChunks: number){ 
-    existsSync(`${folder}`) || mkdirSync(`${folder}`, { recursive: true });
+async function chunkAssembler(fileName: string, totalChunks: number){ 
     const chunks = [];
     for(let i = 1; i <= totalChunks; i++){
         try {
@@ -44,10 +42,9 @@ async function chunkAssembler(fileName: string, folder: string, totalChunks: num
     }
     const data = Buffer.concat(chunks);
     const isImage = fileName.endsWith('png') || fileName.endsWith('jpg') || fileName.endsWith('gif') || fileName.endsWith('jpeg') || fileName.endsWith('webp')
-    const type = isImage ? 'image' : 'file';
     try {
-        console.log('uploading file', `${folder}/${fileName}`);
-        db.prepare('INSERT INTO files(path, data, type) VALUES (?,?,?)').run(`${folder}/${fileName}`, data, type);
+        console.log('uploading file', `${fileName}`);
+        db.prepare('INSERT INTO files(path, data, is_gallery_image) VALUES (?,?,?)').run(`${fileName}`, data, isImage.toString());
     } catch(err){
         console.log(err);
     }

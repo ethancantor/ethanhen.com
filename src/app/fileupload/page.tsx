@@ -1,4 +1,4 @@
-import { FileBrowser } from "@/components/my-file-browser";
+import { FileUploadComponent } from "@/components/file-upload";
 import { authOptions } from "@/utils/authOptions";
 import { db } from "@/utils/sqlite";
 import { filePathsToTree } from "file-paths-to-tree";
@@ -20,7 +20,7 @@ export default async function FileUpload() {
     
     return (
         <div className="w-screen h-screen py-20 overflow-x-hidden">
-            <FileBrowser nodes={nodes}/>
+            <FileUploadComponent folders={nodes} />
         </div>
     )
 };

@@ -8,7 +8,7 @@ export async function GET(request: NextRequest){
     const { searchParams } = new URL(request.url);
     const imageName = searchParams.get('image');
 
-    const data = db.prepare("SELECT * FROM files WHERE path = ? and type='image'").get(imageName) as DB_FILE | null | undefined;
+    const data = db.prepare("SELECT * FROM files WHERE path = ? and is_gallery_image='true'").get(imageName) as DB_FILE | null | undefined;
 
     if(!data) return new Response('', { status: 404 });
 
