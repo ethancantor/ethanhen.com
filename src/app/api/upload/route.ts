@@ -53,7 +53,6 @@ async function chunkAssembler(path: string, totalChunks: number){
     const data = Buffer.concat(chunks);
 
     try {
-        console.log('uploading file', `${path}`);
         db.prepare('INSERT INTO gallery_images(path, data) VALUES (?,?)').run(`${path}`, data);
     } catch(err){
         console.log(err);

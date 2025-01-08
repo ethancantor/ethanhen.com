@@ -2,22 +2,20 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Node } from "file-paths-to-tree";
 import { File, Folder, LoaderIcon, Upload, X } from "lucide-react";
 import React, { useCallback, useState } from "react";
-import FolderSelection from "./folder-selection";
 
 interface FileWithPath extends File {
 	path?: string
 }
 
 
-export function FileUploadComponent({ folders }: { folders: Node[] }) {
+export function FileUploadComponent() {
 	const [files, setFiles] = useState<FileWithPath[]>([]);
 	const [dragActive, setDragActive] = useState(false);
-	const [folder, setFolder] = useState("");
 	const [uploading, setUploading] = useState(false);
 	const [wasError, setWasError] = useState(false);
+	const [uploadProgress, setUploadProgress] = useState(0);
 
 	const onDragOver = useCallback((e: React.DragEvent) => {
 		e.preventDefault();
@@ -32,7 +30,7 @@ export function FileUploadComponent({ folders }: { folders: Node[] }) {
 		setDragActive(false);
 	}, []);
 
-	const processEntry = useCallback(async (entry: FileSystemEntry, path = folder, idx: number = 0): Promise<FileWithPath[]> => {
+	const processEntry = useCallback(async (entry: FileSystemEntry, path = '', idx: number = 0): Promise<FileWithPath[]> => {
 		return new Promise((resolve) => {
 			if (entry.isFile) {
 				(entry as FileSystemFileEntry).file((file: File) => {
@@ -47,7 +45,7 @@ export function FileUploadComponent({ folders }: { folders: Node[] }) {
 				})
 			} else resolve([])
 		})
-	}, [folder]);
+	}, []);
 
 	const onDrop = useCallback(async (e: React.DragEvent) => {
 		e.preventDefault();
@@ -62,7 +60,7 @@ export function FileUploadComponent({ folders }: { folders: Node[] }) {
 			if(item.kind === 'file'){
 				const entry = item.webkitGetAsEntry();
 				if (entry) {
-					const foundFiles = processEntry(entry, folder, i);
+					const foundFiles = processEntry(entry, '', i);
 					promiseList.push(foundFiles);
 				} 
 			}
@@ -70,24 +68,29 @@ export function FileUploadComponent({ folders }: { folders: Node[] }) {
 
 		const allFiles = await Promise.all(promiseList);
 		setFiles((prev) => [...prev, ...allFiles.flat()]);
-	}, [folder, processEntry]);
+	}, [processEntry]);
 
 	const onFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files[0]) {
-			const filesWithPath = Array.from(e.target.files).map((file) => Object.assign(file, { path: folder }))
+			const filesWithPath = Array.from(e.target.files).map((file) => Object.assign(file, { path: '' }))
 			setFiles((prevFiles) => [
 				...prevFiles,
 				...filesWithPath,
 			]);
 		}
-	}, [folder]);
+	}, []);
 
 	const removeFile = useCallback((fileToRemove: File) => {
 		setFiles((prevFiles) => prevFiles.filter((file) => file !== fileToRemove));
 	}, []);
 
 	const handleUpload = useCallback(async () => {
+		setUploadProgress(0);
 		setUploading(true);
+
+		const total_file_size = files.reduce((acc, file) => acc + file.size, 0);
+
+		console.log(total_file_size);
 
 		const CHUNKSIZE = 1024 * 1024; // 1MB
 		const NUMRETIRES = 3;
@@ -108,11 +111,11 @@ export function FileUploadComponent({ folders }: { folders: Node[] }) {
 			let currentChunk = 1;
 			const totalChunks = Math.ceil(file.size / CHUNKSIZE);
 			const responseList = [];
-			console.log(totalChunks);
 			while(start < file.size){
 				const chunk = file.slice(start, start + CHUNKSIZE);
 				start += CHUNKSIZE;
-				const response = await sendChunk(chunk, `${file.path || folder}/${file.name}`, currentChunk, totalChunks);
+				const response = await sendChunk(chunk, `${file.path || ''}/${file.name}`, currentChunk, totalChunks);
+				if(response.ok) setUploadProgress((prev) => prev + (CHUNKSIZE / total_file_size) * 100);
 				responseList.push(response);
 				currentChunk++;
 			}
@@ -134,19 +137,19 @@ export function FileUploadComponent({ folders }: { folders: Node[] }) {
 		setFiles(erroredFiles);
 		setUploading(false);
 
-	}, [files, folder]);
+	}, [files]);
 
 	const fileGroups: string[] = files.reduce((acc: string[], file: FileWithPath) => {
-		const path = file.path || folder;
+		const path = file.path || '';
 		if(!acc.includes(path)) acc.push(path);
 		return acc;
 	}, []);
 
 	return (
-		<div className="w-full max-w-md mx-auto bg-zinc-800 rounded-2xl px-5 pt-5 pb-3 flex flex-col gap-2">
+		<div className="w-full max-w-md mx-auto rounded-2xl px-5 pt-5 pb-3 flex flex-col gap-2">
 			<div
 				className={`relative p-4 rounded-2xl ${
-				dragActive ? "bg-green-700" : "bg-zinc-800"
+				dragActive ? "bg-green-700" : ""
 				} transition-colors duration-300 ease-in-out`}
 				onDragOver={onDragOver}
 				onDragLeave={onDragLeave}
@@ -165,6 +168,7 @@ export function FileUploadComponent({ folders }: { folders: Node[] }) {
 					) : (
 						<Upload className="mx-auto h-12 w-12 text-white" />
 					)}
+					{ uploading && <p className="mt-2 text-sm text-white">{uploadProgress.toFixed(2)}%</p> }
 				<p className="mt-2 text-sm text-white">
 					Drag and drop files here, or click to select files
 				</p>
@@ -192,7 +196,7 @@ export function FileUploadComponent({ folders }: { folders: Node[] }) {
 				>
 					Submit
 				</Button>
-				<FolderSelection folderState={[folder, setFolder]} initFolders={folders} />
+				{/* <FolderSelection folderState={[folder, setFolder]} initFolders={folders} /> */}
 			</div>
 		</div>
 	);
